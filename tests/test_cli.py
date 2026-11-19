@@ -108,3 +108,33 @@ def test_sheet_pictures_the_page_for_each_figure_that_needs_a_look(tmp_path):
     assert done.returncode == 1 and "2 figures to look at" in page
     assert page.count("<img src=\"data:image/png;base64,") >= 1
     assert "Scope 1 emissions = 19,691" in page
+
+
+QROW = {"name": "Emissions from burning fuel", "value": 5845, "page": 1, "source_text": QUOTE}
+
+
+def _run_flags(tmp_path, rows, *flags):
+    f = tmp_path / "r.json"; f.write_text(json.dumps(rows), encoding="utf-8")
+    env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
+    return subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf", str(f), *flags],
+                          cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
+
+
+def test_ask_ai_writes_the_unsettled_figures_with_context(tmp_path):
+    out = tmp_path / "items.json"
+    d = _run_flags(tmp_path, [QROW], "--ask-ai", str(out))
+    items = json.loads(out.read_text(encoding="utf-8"))
+    assert d.returncode == 1 and len(items["items"]) == 1 and items["items"][0]["id"] == 0
+    assert "5,845" in items["items"][0]["context"] and "instructions" in items
+
+
+def test_ai_answers_settle_only_what_was_asked(tmp_path):
+    def run(answer, row=QROW):
+        a = tmp_path / "a.json"; a.write_text(json.dumps([{"id": 0, "answer": answer}]), encoding="utf-8")
+        return _run_flags(tmp_path, [row], "--answers", str(a))
+    assert run("yes").returncode == 0 and "CORRECT" in run("yes").stdout
+    assert "WRONG" in run("no").stdout and run("no").returncode == 1
+    assert "CHECK" in run("unsure").stdout
+    # an AI "yes" can not rescue a number that is not in the text it was taken from, or a quote not in the PDF
+    assert "WRONG" in run("yes", {**QROW, "value": 7777}).stdout
+    assert "WRONG" in run("yes", {**QROW, "source_text": "Emissions from burning fuel 5,845 tonnes"}).stdout
