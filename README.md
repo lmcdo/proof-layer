@@ -1,5 +1,7 @@
 # proof-layer
 
+I've used AI every day for about two years. It kept making up figures, telling me what I wanted to hear, and reporting work as done when it wasn't, most often when I asked it to work with data. So I built proof-layer: instead of trusting the AI's word, it checks each number against the source. It's useful wherever knowing where a number came from matters most.
+
 **Every number your AI pulls from a document, checked against that document.**
 
 ![proof-layer checking 8 figures an AI took from a report: 3 passed, 2 stopped, 3 to confirm](docs/demo.gif)
