@@ -53,8 +53,11 @@ def _found(value, text: str, unit) -> bool:
     return explain_value(value, text, unit)[0] not in FAILING_STATES
 
 
-def _candidate_rows(want: list[str], lines: list[str]) -> list[int]:
-    """Rows that best match the label. Digits in the label must all be on the row."""
+def _candidate_rows(want: list[str], lines: list[str], line_tokens: Optional[list] = None) -> list[int]:
+    """Rows that best match the label. Digits in the label must all be on the row.
+
+    ``line_tokens`` lets a caller that checks many claims against one page prepare the
+    page's words once instead of on every call."""
     digits = {t for t in want if t.isdigit()}
     words = [t for t in want if not t.isdigit()]
     if not words:
@@ -62,7 +65,7 @@ def _candidate_rows(want: list[str], lines: list[str]) -> list[int]:
     need = 1.0 if len(words) <= 2 else LONG_LABEL_MATCH
     scored = []
     for i, ln in enumerate(lines):
-        have = set(_tokens(ln))
+        have = line_tokens[i] if line_tokens is not None else set(_tokens(ln))
         if not digits <= have:
             continue
         share = sum(1 for w in words if w in have) / len(words)

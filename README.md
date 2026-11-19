@@ -52,45 +52,39 @@ Anyone who stands behind figures that an AI read from documents: sustainability 
 
 ## How to use it
 
-You need two things: the PDF, and the list of figures your AI pulled from it (what each is about, the number, the page).
-
-1. **Install it** (needs Python): `pip install ".[pdf]"`
-2. **Put your figures in a spreadsheet saved as CSV,** with three columns: `about`, `number`, `page`. An optional fourth column, `unit`, is explained in the tips below. See `examples/figures.csv`.
-3. **Run it:**
+Your code reads a report and returns the figures it found. Say it returned `examples/results.json`:
 
 ```
-python examples/check_figures.py examples/sample_report.pdf examples/figures.csv
+[
+  {"name": "Scope 1 emissions", "value": 5845},
+  {"name": "Scope 1 emissions", "value": 19691},
+  {"name": "Total energy consumption", "value": 1074807},
+  {"name": "Scope 3 emissions", "value": 5845}
+]
 ```
 
-4. **Read the result.** Each figure shows what the AI said. Anything that didn't pass also shows the line of the page it was checked against, and why:
+Give proof-layer the PDF and that file (`pip install ".[pdf]"` first):
 
 ```
-PASSED   Scope 1 emissions = 5,845   (p1)
-PASSED   Scope 2 emissions = 19,691   (p1)
-STOPPED  Scope 1 emissions = 19,691   (p1)
-         page says: Scope 1 emissions (tCO2-e) 5,845 6,102
-         19,691 is on this page, but for something else
-STOPPED  Scope 2 emissions = 19,000   (p1)
-         page says: Scope 2 emissions (tCO2-e) 19,691 18,400
-         19,000 is not on the page
-PASSED   Total energy consumption = 1,074,807   (p1)
-CONFIRM  Water withdrawn = 22.975   (p1)
-         fits 2 places on the page:
-           Water withdrawn (ML) 22.975 26.511
-           Water withdrawn in water-stressed areas (ML) 3.8 4.1
-CONFIRM  Water withdrawn = 3.8   (p1)
-         fits 2 places on the page:
-           Water withdrawn (ML) 22.975 26.511
-           Water withdrawn in water-stressed areas (ML) 3.8 4.1
-CONFIRM  Scope 3 emissions = 5,845   (p1)
-         nothing on the page is about this
-
-5 figure(s) need attention
+proof-layer examples/sample_report.pdf examples/results.json
 ```
 
-`PASSED` figures are done. `STOPPED` ones are errors to correct. `CONFIRM` ones need a quick look at the page, or a more specific description in the `about` column and a re-run. The script exits with 1 if anything needs attention, so it can run as a step in a pipeline.
+```
+CORRECT  Scope 1 emissions = 5,845, page 1
+WRONG    Scope 1 emissions = 19,691, page 1
+         the report says: p1: Scope 1 emissions (tCO2-e) 5,845 6,102
+CORRECT  Total energy consumption = 1,074,807, page 1
+CHECK    Scope 3 emissions = 5,845
+         nothing in the document is clearly about this; the number appears elsewhere
 
-Building this into your own tool? The one function is in the next section.
+2 need attention
+```
+
+- **CORRECT:** the number is in the report, where it talks about that item. Use it.
+- **WRONG:** the number isn't there, or belongs to something else. It shows what the report says.
+- **CHECK:** it won't guess. Look at the report.
+
+No page numbers or spreadsheet needed. It searches the whole PDF and tells you the page. It exits with 1 if anything needs attention, so it can gate a pipeline.
 
 ## Install and quickstart
 

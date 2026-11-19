@@ -21,6 +21,9 @@ pdf = ["pdfplumber"]
 benchmarks = ["pdfplumber"]
 test = ["pytest"]
 
+[project.scripts]
+proof-layer = "proof_layer.cli:main"
+
 [tool.setuptools]
 packages = ["proof_layer"]
 
