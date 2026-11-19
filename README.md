@@ -46,6 +46,37 @@ Keep what you have. proof-layer is the last step before the numbers go out.
 
 Anyone who stands behind figures that an AI read from documents: sustainability and audit teams, finance, procurement and compliance teams working from contracts, invoices and filings, and products that show users figures from their own documents.
 
+## How to use it
+
+You need two things: the PDF, and the list of figures your AI pulled from it (what each is about, the number, the page).
+
+1. **Install it** (needs Python): `pip install ".[pdf]"`
+2. **Put your figures in a spreadsheet saved as CSV,** with three columns: `about`, `number`, `page`. See `examples/figures.csv`.
+3. **Run it:**
+
+```
+python examples/check_figures.py examples/sample_report.pdf examples/figures.csv
+```
+
+4. **Read the result.** One line per figure:
+
+```
+PASSED   p1  Scope 1 emissions: 5845
+PASSED   p1  Scope 2 emissions: 19691
+STOPPED  p1  Scope 1 emissions: 19691   (the number is on the page, but it belongs to something else)
+STOPPED  p1  Scope 2 emissions: 19000   (the number is not on the page)
+PASSED   p1  Total energy consumption: 1074807
+CONFIRM  p1  Water withdrawn: 22.975   (several places on the page fit this description)
+CONFIRM  p1  Water withdrawn: 3.8   (several places on the page fit this description)
+CONFIRM  p1  Scope 3 emissions: 5845   (could not find where the page discusses this)
+
+5 figure(s) need attention
+```
+
+`PASSED` figures are done. `STOPPED` ones are errors to correct. `CONFIRM` ones need a quick look at the page, or a more specific description in the `about` column and a re-run. The script exits with 1 if anything needs attention, so it can run as a step in a pipeline.
+
+Building this into your own tool? The one function is in the next section.
+
 ## Install and quickstart
 
 ```
@@ -94,7 +125,7 @@ Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1
 
 - `proof_layer/locate.py`: finds the part of the page that discusses the item, then checks the number there.
 - `proof_layer/integrity.py`: the number check itself. It recognises the legitimate ways a number can be written differently (35% as 0.35, 900 mm as 0.9 m).
-- `tests/`: 66 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
+- `tests/`: 67 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
 - `benchmarks/`: the test scripts and saved results.
 
 Apache-2.0. Copyright 2026 Lawrence McDonell.

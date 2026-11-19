@@ -17,6 +17,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+pdf = ["pdfplumber"]
 benchmarks = ["pdfplumber"]
 test = ["pytest"]
 
