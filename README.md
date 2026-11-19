@@ -52,18 +52,24 @@ Anyone who stands behind figures that an AI read from documents: sustainability 
 
 ## An example, start to finish
 
-**The situation.** You're writing a client report and need four figures from a company's climate report (a PDF). You ask an AI to read the PDF and list them. It answers:
+**The situation.** A sustainability consultant is preparing a client's climate disclosure. By law, companies now have to report their emissions and energy use, and an auditor will later pick figures at random and ask: *where did this number come from?* The consultant's source is the client's own 80-page sustainability report (a PDF). Copying figures out of it by hand takes days, so she has an AI read the report and fill in the disclosure table.
 
-| What the AI says | Number |
+**The risk.** The AI is usually right, but not always. It might copy the Scope 2 figure into the Scope 1 box (they sit next to each other in the report). Or the table has a Scope 3 line and the AI fills it in even though the report never gives one. If that reaches the auditor, the consultant is the one who signed it.
+
+**What goes in.** Two things she already has:
+1. **The report**, as the PDF.
+2. **The AI's filled-in table**, which says:
+
+| Disclosure line | AI's figure |
 |---|---|
 | Scope 1 emissions | 5,845 |
-| Scope 1 emissions (again) | 19,691 |
+| Scope 1 emissions (second try) | 19,691 |
 | Total energy consumption | 1,074,807 |
 | Scope 3 emissions | 5,845 |
 
-Which of these can you trust? Normally you'd open the PDF and look each one up. Instead:
+**What she wants back.** Which figures are safe to submit, which are wrong, and for each one, the page and line of the report it comes from, so she can answer the auditor.
 
-**1. Save the AI's list** as a file, `results.json`. If your code produced the list, it's already one. It looks like this:
+**1. Save the AI's table** as a file, `results.json`. If your software produced it, it's probably already in this form:
 
 ```
 [
@@ -98,7 +104,7 @@ CHECK    Scope 3 emissions = 5,845
 - **Total energy = 1,074,807:** correct.
 - **Scope 3 = 5,845:** it won't guess. Nothing in the report clearly talks about Scope 3, so it says check.
 
-So you can use 2 numbers straight away, correct 1, and look up 1. That took seconds, and you didn't open the PDF for the three it settled.
+So she can submit 2 figures with the page to point to, fix 1 (it caught the Scope 1/Scope 2 mix-up), and chase 1 (the report has no Scope 3 figure, so the AI made it up or took it from elsewhere). That took seconds, and she only opened the PDF for that last one.
 
 `sample_report.pdf` is a made-up one-page report in the `examples` folder, so you can run this yourself. You don't need page numbers: it searches the whole PDF and tells you the page. It exits with 1 if anything needs attention, so it can also stop a pipeline.
 
