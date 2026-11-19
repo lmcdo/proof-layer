@@ -1,4 +1,4 @@
-"""Make docs/demo.gif from a REAL run of examples/check_figures.py.
+"""Make docs/demo.gif from a REAL run of the proof-layer command.
 
 The script runs the example, captures its output, and draws it as a terminal recording: the
 command is typed, then each figure appears with what the AI said and, for anything that did
@@ -16,17 +16,17 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "demo.gif"
-COMMAND = "python examples/check_figures.py examples/sample_report.pdf examples/figures.csv"
+COMMAND = "proof-layer sample_report.pdf results.json"
 
 BG, FG, DIM = (13, 17, 23), (201, 209, 217), (125, 133, 144)
-GREEN, RED, AMBER = (63, 185, 80), (248, 81, 73), (210, 153, 34)
-WORDS = (("PASSED", GREEN), ("STOPPED", RED), ("CONFIRM", AMBER))
+GREEN, RED, AMBER = (63, 185, 80), (248, 81, 73), (255, 190, 40)
+WORDS = (("CORRECT", GREEN), ("WRONG", RED), ("CHECK", AMBER))
 W, PAD, FONT_SIZE, LINE = 940, 24, 16, 25
 
 
 def real_output() -> list[str]:
     env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
-    done = subprocess.run([sys.executable, *COMMAND.split()[1:]], cwd=ROOT, env=env,
+    done = subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf", "examples/results.json"], cwd=ROOT, env=env,
                           capture_output=True, text=True, encoding="utf-8")
     return done.stdout.splitlines()
 
@@ -52,7 +52,7 @@ def blocks_of(lines: list[str]) -> list[list[str]]:
 def draw_frame(font, height, command_shown, shown_blocks, summary, cursor):
     img = Image.new("RGB", (W, height), BG)
     d = ImageDraw.Draw(img)
-    d.text((PAD, PAD - 6), "proof-layer: 8 figures an AI took from a report, checked against the PDF", font=font, fill=DIM)
+    d.text((PAD, PAD - 6), "proof-layer: 4 figures an AI took from a report, checked against the PDF", font=font, fill=DIM)
     y = PAD + 30
     d.text((PAD, y), "$ " + command_shown + ("_" if cursor else ""), font=font, fill=FG)
     y += LINE + 8
@@ -75,10 +75,10 @@ def main() -> None:
     font = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", FONT_SIZE)
     lines = [ln for ln in real_output() if ln.strip()]
     blocks = blocks_of(lines)
-    assert len(blocks) == 8, f"expected 8 figures, got {len(blocks)}"
+    assert len(blocks) == 4, f"expected 4 figures, got {len(blocks)}"
     assert "need attention" in lines[-1], "unexpected output"
     counts = {w: sum(1 for b in blocks if b[0].startswith(w)) for w, _ in WORDS}
-    summary = f"{counts['PASSED']} passed   {counts['STOPPED']} stopped   {counts['CONFIRM']} to confirm"
+    summary = f"{counts['CORRECT']} correct   {counts['WRONG']} wrong   {counts['CHECK']} to check"
     height = PAD * 2 + 30 + LINE + 8 + LINE * sum(len(b) for b in blocks) + 8 + LINE + 6
 
     frames, durations = [], []
