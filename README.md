@@ -50,9 +50,20 @@ Keep what you have. proof-layer is the last step before the numbers go out.
 
 Anyone who stands behind figures that an AI read from documents: sustainability and audit teams, finance, procurement and compliance teams working from contracts, invoices and filings, and products that show users figures from their own documents.
 
-## How to use it
+## An example, start to finish
 
-Your code reads a report and returns the figures it found. Say it returned `examples/results.json`:
+**The situation.** You're writing a client report and need four figures from a company's climate report (a PDF). You ask an AI to read the PDF and list them. It answers:
+
+| What the AI says | Number |
+|---|---|
+| Scope 1 emissions | 5,845 |
+| Scope 1 emissions (again) | 19,691 |
+| Total energy consumption | 1,074,807 |
+| Scope 3 emissions | 5,845 |
+
+Which of these can you trust? Normally you'd open the PDF and look each one up. Instead:
+
+**1. Save the AI's list** as a file, `results.json`. If your code produced the list, it's already one. It looks like this:
 
 ```
 [
@@ -63,11 +74,13 @@ Your code reads a report and returns the figures it found. Say it returned `exam
 ]
 ```
 
-Give proof-layer the PDF and that file (`pip install ".[pdf]"` first):
+**2. Run one command** with the PDF and that file (install first with `pip install ".[pdf]"`):
 
 ```
-proof-layer examples/sample_report.pdf examples/results.json
+proof-layer sample_report.pdf results.json
 ```
+
+**3. Read the answer.** It looks every number up in the PDF:
 
 ```
 CORRECT  Scope 1 emissions = 5,845, page 1
@@ -80,11 +93,14 @@ CHECK    Scope 3 emissions = 5,845
 2 need attention
 ```
 
-- **CORRECT:** the number is in the report, where it talks about that item. Use it.
-- **WRONG:** the number isn't there, or belongs to something else. It shows what the report says.
-- **CHECK:** it won't guess. Look at the report.
+- **Scope 1 = 5,845:** correct, found on page 1.
+- **Scope 1 = 19,691:** wrong. That number is in the report, but it belongs to Scope 2. It shows you the line the report has for Scope 1.
+- **Total energy = 1,074,807:** correct.
+- **Scope 3 = 5,845:** it won't guess. Nothing in the report clearly talks about Scope 3, so it says check.
 
-No page numbers or spreadsheet needed. It searches the whole PDF and tells you the page. It exits with 1 if anything needs attention, so it can gate a pipeline.
+So you can use 2 numbers straight away, correct 1, and look up 1. That took seconds, and you didn't open the PDF for the three it settled.
+
+`sample_report.pdf` is a made-up one-page report in the `examples` folder, so you can run this yourself. You don't need page numbers: it searches the whole PDF and tells you the page. It exits with 1 if anything needs attention, so it can also stop a pipeline.
 
 ## Install and quickstart
 
