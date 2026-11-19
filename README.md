@@ -2,6 +2,8 @@
 
 **Every number your AI pulls from a document, checked against that document.**
 
+![proof-layer checking 8 figures an AI took from a report: 3 passed, 2 stopped, 3 to confirm](docs/demo.gif)
+
 An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks you instead of guessing.
 
 - **Right numbers pass on their own.** In testing, 88 in 100 right numbers needed no one.
