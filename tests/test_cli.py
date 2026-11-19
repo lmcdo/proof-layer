@@ -14,3 +14,14 @@ def test_cli_output_matches_the_readme():
     for line in done.stdout.strip().splitlines():
         if line.strip():
             assert line.rstrip() in readme, line
+
+
+def test_a_written_answer_is_checked_figure_by_figure():
+    env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
+    done = subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf", "examples/ai_answer.txt"],
+                          cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
+    out = done.stdout
+    assert done.returncode == 1
+    assert "CORRECT  Scope 1 emissions = 5,845, page 1" in out
+    assert "WRONG    Scope 1 emissions = 19,691, page 1" in out
+    assert "1 need attention" in out

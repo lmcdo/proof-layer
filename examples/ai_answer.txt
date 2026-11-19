@@ -1,0 +1,5 @@
+Here is what the report says:
+- Scope 1 emissions were 5,845 tCO2-e.
+- Scope 2 emissions were 19,691 tCO2-e.
+- Total energy consumption was 1,074,807 GJ.
+- Scope 1 emissions were 19,691 tCO2-e in the restated table.
