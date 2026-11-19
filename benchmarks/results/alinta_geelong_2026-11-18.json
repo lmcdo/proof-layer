@@ -1,0 +1,86 @@
+{
+  "true_claims": 600,
+  "docs": [
+    "alinta.pdf",
+    "geelong.pdf"
+  ],
+  "seed": 20261118,
+  "results": {
+    "tight": {
+      "naive_substring": {
+        "false_alarm_rate": 0.073,
+        "catch_rate_overall": 0.892,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.884,
+          "digits_swapped": 0.817,
+          "lifted_from_page": 0.867,
+          "sign_flipped": 0.89,
+          "times_ten": 0.971
+        },
+        "wrong_n": 2618
+      },
+      "old_value_absent_from_source": {
+        "false_alarm_rate": 0.073,
+        "catch_rate_overall": 0.892,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.884,
+          "digits_swapped": 0.817,
+          "lifted_from_page": 0.867,
+          "sign_flipped": 0.89,
+          "times_ten": 0.971
+        },
+        "wrong_n": 2618
+      },
+      "explain_value": {
+        "false_alarm_rate": 0.0,
+        "catch_rate_overall": 0.999,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.998,
+          "digits_swapped": 0.997,
+          "lifted_from_page": 1.0,
+          "sign_flipped": 1.0,
+          "times_ten": 1.0
+        },
+        "wrong_n": 2618
+      }
+    },
+    "loose": {
+      "naive_substring": {
+        "false_alarm_rate": 0.073,
+        "catch_rate_overall": 0.571,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.508,
+          "digits_swapped": 0.709,
+          "lifted_from_page": 0.092,
+          "sign_flipped": 0.835,
+          "times_ten": 0.77
+        },
+        "wrong_n": 2618
+      },
+      "old_value_absent_from_source": {
+        "false_alarm_rate": 0.073,
+        "catch_rate_overall": 0.571,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.508,
+          "digits_swapped": 0.709,
+          "lifted_from_page": 0.092,
+          "sign_flipped": 0.835,
+          "times_ten": 0.77
+        },
+        "wrong_n": 2618
+      },
+      "explain_value": {
+        "false_alarm_rate": 0.0,
+        "catch_rate_overall": 0.689,
+        "catch_rate_by_kind": {
+          "digit_changed": 0.732,
+          "digits_swapped": 0.863,
+          "lifted_from_page": 0.0,
+          "sign_flipped": 1.0,
+          "times_ten": 0.918
+        },
+        "wrong_n": 2618
+      }
+    }
+  }
+}
