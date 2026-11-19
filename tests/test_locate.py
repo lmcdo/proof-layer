@@ -90,3 +90,9 @@ def test_a_different_digit_never_matches_the_wrong_row():
 
 def test_label_with_no_matching_words_is_unknown():
     assert v("Biodiversity offsets purchased", 5845) == UNKNOWN
+
+
+def test_unit_stops_a_figure_matching_the_wrong_kind_of_quantity():
+    page = "Minimum setback 3 hours of sunlight is required on site\nFront setback to street 6 m"
+    assert check_claim("Minimum setback", 3, page)["verdict"] == FOUND_IN_ROW           # no unit: the digits are there
+    assert check_claim("Minimum setback", 3, page, unit="m")["verdict"] == ABSENT       # metres: "3 hours" does not count

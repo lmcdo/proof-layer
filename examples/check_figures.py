@@ -3,7 +3,8 @@
 usage: python examples/check_figures.py report.pdf figures.csv
 
 figures.csv has three columns: what the figure is about, the number, and the page it came
-from (as the AI reported it). See examples/figures.csv.
+from (as the AI reported it). An optional fourth column, unit, can hold m, m2, hours, % or
+storeys. See examples/figures.csv.
 
 Prints one line per figure in plain words. Exit code 0 if every figure passed, 1 if any
 needs attention, so it can sit in a pipeline.
@@ -34,7 +35,7 @@ def main(pdf_path: str, csv_path: str) -> int:
             except ValueError:
                 value = None
             text = pdf.pages[page_no - 1].extract_text() or ""
-            result = check_claim(label, value, text)
+            result = check_claim(label, value, text, unit=(row.get("unit") or "").strip() or None)
             word, why = PLAIN[result["verdict"]]
             if word != "PASSED":
                 needs_attention += 1

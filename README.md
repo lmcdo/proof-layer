@@ -51,7 +51,7 @@ Anyone who stands behind figures that an AI read from documents: sustainability 
 You need two things: the PDF, and the list of figures your AI pulled from it (what each is about, the number, the page).
 
 1. **Install it** (needs Python): `pip install ".[pdf]"`
-2. **Put your figures in a spreadsheet saved as CSV,** with three columns: `about`, `number`, `page`. See `examples/figures.csv`.
+2. **Put your figures in a spreadsheet saved as CSV,** with three columns: `about`, `number`, `page`. An optional fourth column, `unit`, is explained in the tips below. See `examples/figures.csv`.
 3. **Run it:**
 
 ```
@@ -117,15 +117,15 @@ Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1
 
 ## Tips for the best results
 
-- **Be specific.** "Water withdrawn in water-stressed areas" passes where "Total water" would ask you to confirm.
-- **Give the unit** (metres, %, tonnes) when you know it.
+- **Be specific in the `about` column.** It is the one thing you control. Write it the way the report words it, and add whatever makes the item unique: the table name, "market-based", the scope number. "Water withdrawn in water-stressed areas" passes where "Total water" would ask you to confirm. A quick way: copy the words from the line in the PDF.
+- **Add a `unit` column for metres (`m`), square metres (`m2`), `hours`, `%` or `storeys`.** It stops a 3 metre figure being matched to "3 hours of sunlight". Other units (tonnes, GJ, ML) are accepted but make no difference yet.
 - **Two years side by side on one line:** it confirms the number is on the line but doesn't pick the year.
 
 ## What's inside
 
 - `proof_layer/locate.py`: finds the part of the page that discusses the item, then checks the number there.
 - `proof_layer/integrity.py`: the number check itself. It recognises the legitimate ways a number can be written differently (35% as 0.35, 900 mm as 0.9 m).
-- `tests/`: 67 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
+- `tests/`: 68 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
 - `benchmarks/`: the test scripts and saved results.
 
 Apache-2.0. Copyright 2026 Lawrence McDonell.
