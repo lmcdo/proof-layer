@@ -96,3 +96,13 @@ def test_unit_stops_a_figure_matching_the_wrong_kind_of_quantity():
     page = "Minimum setback 3 hours of sunlight is required on site\nFront setback to street 6 m"
     assert check_claim("Minimum setback", 3, page)["verdict"] == FOUND_IN_ROW           # no unit: the digits are there
     assert check_claim("Minimum setback", 3, page, unit="m")["verdict"] == ABSENT       # metres: "3 hours" does not count
+
+
+def test_held_back_results_show_the_line_they_were_checked_against():
+    wrong = check_claim("Scope 1 emissions", 19691, PAGE)
+    assert wrong["verdict"] == WRONG_FOR_LABEL
+    assert wrong["lines"] == ["Scope 1 emissions 5,845 6,102"]
+    two = check_claim("Emissions", 99, "Emissions 5,845\nEmissions 99")
+    assert two["verdict"] == AMBIGUOUS_LABEL and len(two["lines"]) == 2
+    assert check_claim("Scope 1 emissions", 5845, PAGE)["lines"] == ["Scope 1 emissions 5,845 6,102"]
+    assert "lines" not in check_claim("Scope 3 emissions", 5845, PAGE)   # no matching line to show

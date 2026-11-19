@@ -95,22 +95,24 @@ def check_claim(label: str, value, page_text: Optional[str], unit=None) -> dict:
         why = "no row matches the label; number is on the page" if verdict == UNKNOWN else "number is not on the page"
         return _result(verdict, why, candidates=0)
 
-    hits = []
+    hits, windows = [], []
     for i in rows:
         window = lines[i]
         # A wrapped row: the numbers sit on the next line when that line has no words of its own.
         if i + 1 < len(lines) and not _tokens(lines[i + 1]):
             window += " " + lines[i + 1]
+        windows.append(window)
         if _found(value, window, unit):
             hits.append(window)
+    shown = [w[:140] for w in windows[:3]]   # the line(s) the claim was checked against
     if hits and len(rows) == 1:
         return _result(FOUND_IN_ROW, "number is written in the label's only matching row",
-                       candidates=1, row=hits[0][:200])
+                       candidates=1, row=hits[0][:200], lines=shown)
     if hits:
         return _result(AMBIGUOUS_LABEL,
                        f"{len(rows)} rows match the label; the number is in {len(hits)} of them",
-                       candidates=len(rows), rows_with_number=len(hits))
+                       candidates=len(rows), rows_with_number=len(hits), lines=shown)
     if _found(value, page_text, unit):
         return _result(WRONG_FOR_LABEL, "number is on the page but not in the label's row",
-                       candidates=len(rows))
-    return _result(ABSENT, "number is not on the page", candidates=len(rows))
+                       candidates=len(rows), lines=shown)
+    return _result(ABSENT, "number is not on the page", candidates=len(rows), lines=shown)

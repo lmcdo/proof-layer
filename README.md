@@ -60,17 +60,28 @@ You need two things: the PDF, and the list of figures your AI pulled from it (wh
 python examples/check_figures.py examples/sample_report.pdf examples/figures.csv
 ```
 
-4. **Read the result.** One line per figure:
+4. **Read the result.** Each figure shows what the AI said. Anything that didn't pass also shows the line of the page it was checked against, and why:
 
 ```
-PASSED   p1  Scope 1 emissions: 5845
-PASSED   p1  Scope 2 emissions: 19691
-STOPPED  p1  Scope 1 emissions: 19691   (the number is on the page, but it belongs to something else)
-STOPPED  p1  Scope 2 emissions: 19000   (the number is not on the page)
-PASSED   p1  Total energy consumption: 1074807
-CONFIRM  p1  Water withdrawn: 22.975   (several places on the page fit this description)
-CONFIRM  p1  Water withdrawn: 3.8   (several places on the page fit this description)
-CONFIRM  p1  Scope 3 emissions: 5845   (could not find where the page discusses this)
+PASSED   Scope 1 emissions = 5,845   (p1)
+PASSED   Scope 2 emissions = 19,691   (p1)
+STOPPED  Scope 1 emissions = 19,691   (p1)
+         page says: Scope 1 emissions (tCO2-e) 5,845 6,102
+         19,691 is on this page, but for something else
+STOPPED  Scope 2 emissions = 19,000   (p1)
+         page says: Scope 2 emissions (tCO2-e) 19,691 18,400
+         19,000 is not on the page
+PASSED   Total energy consumption = 1,074,807   (p1)
+CONFIRM  Water withdrawn = 22.975   (p1)
+         fits 2 places on the page:
+           Water withdrawn (ML) 22.975 26.511
+           Water withdrawn in water-stressed areas (ML) 3.8 4.1
+CONFIRM  Water withdrawn = 3.8   (p1)
+         fits 2 places on the page:
+           Water withdrawn (ML) 22.975 26.511
+           Water withdrawn in water-stressed areas (ML) 3.8 4.1
+CONFIRM  Scope 3 emissions = 5,845   (p1)
+         nothing on the page is about this
 
 5 figure(s) need attention
 ```
@@ -127,7 +138,7 @@ Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1
 
 - `proof_layer/locate.py`: finds the part of the page that discusses the item, then checks the number there.
 - `proof_layer/integrity.py`: the number check itself. It recognises the legitimate ways a number can be written differently (35% as 0.35, 900 mm as 0.9 m).
-- `tests/`: 68 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
+- `tests/`: 69 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
 - `benchmarks/`: the test scripts and saved results.
 
 Apache-2.0. Copyright 2026 Lawrence McDonell.

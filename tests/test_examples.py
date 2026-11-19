@@ -17,11 +17,12 @@ def test_example_script_gives_the_documented_output():
         cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
     out = done.stdout
     assert done.returncode == 1
-    assert "PASSED   p1  Scope 1 emissions: 5845" in out
-    assert "STOPPED  p1  Scope 1 emissions: 19691" in out
-    assert "STOPPED  p1  Scope 2 emissions: 19000" in out
-    assert "CONFIRM  p1  Water withdrawn: 22.975" in out
-    assert "CONFIRM  p1  Scope 3 emissions: 5845" in out
+    assert "PASSED   Scope 1 emissions = 5,845   (p1)" in out
+    assert "STOPPED  Scope 1 emissions = 19,691   (p1)" in out
+    assert "page says: Scope 1 emissions (tCO2-e) 5,845 6,102" in out
+    assert "19,000 is not on the page" in out
+    assert "fits 2 places on the page:" in out
+    assert "nothing on the page is about this" in out
     assert "5 figure(s) need attention" in out
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for line in out.strip().splitlines():
