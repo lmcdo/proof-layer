@@ -146,6 +146,8 @@ Version 0.1.0, tested on two real public company sustainability reports. I took 
 
 The 12 in 100 are not errors. They are numbers it wouldn't guess at, mostly because the same wording appears in several tables of one report, like "Total water". The test used a random sample of all the numbers in both reports, including index tables and chart labels. Two separate runs gave identical results.
 
+**Searching the whole PDF with no page number** (what the command does): same test, 553 real numbers and the same 2,392 wrong versions. It stopped **99.9 in 100** wrong numbers (2,389 of 2,392). It asks you to confirm **16 in 100** right numbers (a little more than the 12 above, because the same wording can now match a table on another page). Saved in `benchmarks/results/whole_doc_alinta_geelong_2026-11-20.json`; run `benchmarks/whole_document_wrong_numbers.py` the same way as below.
+
 Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1.pdf report2.pdf` (needs `pip install ".[benchmarks]"`).
 
 ## Tips for the best results
