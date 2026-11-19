@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from .locate import (ABSENT, AMBIGUOUS_LABEL, FOUND_IN_ROW, UNKNOWN, WRONG_FOR_LABEL, _candidate_rows,
-                     _found, _result, _tokens)
+                     _found, _result, _tokens, _without_label_digits)
 
 
 @dataclass
@@ -70,7 +70,7 @@ def check_in_document(label: str, value, doc: Document, unit: Optional[str] = No
         float(value)
     except (TypeError, ValueError):
         return _result(UNKNOWN, "the claimed value is not a number")
-    want = _tokens(label)
+    want = _tokens(str(label))
     if not [t for t in want if not t.isdigit()]:
         return _result(UNKNOWN, "the description is too short to locate anything")
     if not any(p.text.strip() for p in doc.pages):
@@ -80,7 +80,7 @@ def check_in_document(label: str, value, doc: Document, unit: Optional[str] = No
     for page in doc.pages:
         for i in _candidate_rows(want, page.lines, page.tokens):
             row = _window(page, i)
-            seen.append((page.number, row, _found(value, row, unit)))
+            seen.append((page.number, row, _found(value, _without_label_digits(row, want), unit)))
 
     pages = sorted({n for n, _, _ in seen})
     shown = [f"p{n}: {row[:140]}" for n, row, _ in seen[:3]]

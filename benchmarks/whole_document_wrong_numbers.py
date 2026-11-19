@@ -31,6 +31,7 @@ sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE))
 import seeded_wrong_numbers as sw  # noqa: E402
 from proof_layer.integrity import FAILING_STATES, explain_value  # noqa: E402
+from proof_layer.locate import _tokens  # noqa: E402
 from proof_layer.locate import FOUND_IN_ROW  # noqa: E402
 from proof_layer.document import Document, check_in_document  # noqa: E402
 import pdfplumber  # noqa: E402
@@ -85,6 +86,9 @@ def main():
         words = base_label(line, lrng)
         if not re.search(r"[A-Za-z]{3,}", " ".join(words)):
             skipped += 1
+            continue
+        if v == int(v) and str(int(v)) in _tokens(" ".join(words)):
+            skipped += 1        # the number is part of its own description ("Scope 3", "wharf 7"): no claim to check
             continue
         line_nums = {float(n.rstrip(".,").replace(",", "")) for n in sw.NUM.findall(line)
                      if n.rstrip(".,").replace(",", "").replace("-", "").replace(".", "").isdigit()}

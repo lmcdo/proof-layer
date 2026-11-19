@@ -9,7 +9,7 @@ I've used AI every day for about two years. It kept making up figures, telling m
 An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks you instead of guessing.
 
 - **Right numbers pass on their own.** In testing, 88 in 100 right numbers needed no one.
-- **Wrong numbers are stopped.** 99.9 in 100 in testing (2,389 of 2,392 deliberately wrong numbers).
+- **Wrong numbers are stopped.** 100 in 100 in testing (889 of 889 deliberately wrong numbers).
 - **Same answer every time.** Fixed rules, no second AI, no cost per check.
 - **Works with what you already use.** Any AI, any extraction tool, any RAG setup.
 
@@ -22,7 +22,7 @@ You're preparing a client's climate disclosure from 40 company reports.
 3. **The few it asks about come back with a one-line reason,** such as "the same wording appears in two tables". You confirm them.
 4. **You send the spreadsheet knowing every figure was checked against its source.**
 
-**Time saved.** Instead of checking all 500 by hand, you confirm the handful it asks about. At 3 minutes a check, 500 numbers is about 25 hours by hand. At the test's rate of 12 in 100 that need confirming, it is about 3 hours. Use your own minutes per check. (The held-back numbers may take a little longer than average.)
+**Time saved.** Instead of checking all 500 by hand, you confirm only the ones it asks about. At 3 minutes a check, 500 numbers is about 25 hours by hand. At the test's rate of 43 in 100 that need confirming (24 in 100 when you give the page), it is about 11 hours (6 with the page). Use your own minutes per check. (The held-back numbers may take a little longer than average.)
 
 ## What you get back
 
@@ -139,30 +139,29 @@ assert check_claim("Scope 3 emissions", 5845, page)["verdict"] == "UNKNOWN"
 
 ## Results
 
-Version 0.1.0, tested on two real public company sustainability reports. I took real numbers from them, then made 2,392 deliberately wrong versions: a digit changed, two digits swapped, multiplied by ten, the sign flipped, or a number borrowed from elsewhere on the same page.
+Tested on two real public company sustainability reports (Alinta Energy FY25 and Geelong Port 2025), version 0.1.0. I took 189 real numbers from them, then made 889 deliberately wrong versions: a digit changed, two digits swapped, multiplied by ten, the sign flipped, or a number borrowed from elsewhere on the same page. Numbers that are part of their own description ("Scope 3", "wharf 7") were left out, because there is nothing to check there.
 
 | | Wrong numbers stopped | Right numbers it asks you to confirm |
 |---|---|---|
 | Only checking the number appears somewhere on the page | 69 in 100 | 0 |
-| **proof-layer** | **99.9 in 100** (2,389 of 2,392) | **12 in 100** |
+| **proof-layer, one page** | **100 in 100** (889 of 889) | **24 in 100** |
+| **proof-layer, whole PDF, no page number** (what the command does) | **100 in 100** (889 of 889) | **43 in 100** |
 
-The 12 in 100 are not errors. They are numbers it wouldn't guess at, mostly because the same wording appears in several tables of one report, like "Total water". The test used a random sample of all the numbers in both reports, including index tables and chart labels. Two separate runs gave identical results.
+The ones it asks you to confirm are not errors. They are numbers it won't guess at, mostly short ones ("2", "10") or wording that appears in several tables of one report, like "Total water". Searching the whole PDF finds more places that fit, so it asks more often. The test used a random sample of all the numbers in both reports, including index tables and chart labels, so real reports with clearer descriptions should ask less. Wrong numbers that passed in this test: 0 of 889. An earlier version let a number through when it was only the digit in the item's name (item "Scope 3", number 3); that is fixed and covered by a test.
 
-**Searching the whole PDF with no page number** (what the command does): same test, 553 real numbers and the same 2,392 wrong versions. It stopped **99.9 in 100** wrong numbers (2,389 of 2,392). It asks you to confirm **16 in 100** right numbers (a little more than the 12 above, because the same wording can now match a table on another page). Saved in `benchmarks/results/whole_doc_alinta_geelong_2026-11-20.json`; run `benchmarks/whole_document_wrong_numbers.py` the same way as below.
-
-Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1.pdf report2.pdf` (needs `pip install ".[benchmarks]"`).
+Run it yourself: `python -I benchmarks/whole_document_wrong_numbers.py out.json report1.pdf report2.pdf` (or `located_wrong_numbers.py` for one page at a time; needs `pip install ".[benchmarks]"`).
 
 ## Tips for the best results
 
 - **Be specific in the description of each figure.** It is the one thing you control. Write it the way the report words it, and add whatever makes the item unique: the table name, "market-based", the scope number. "Water withdrawn in water-stressed areas" passes where "Total water" would ask you to confirm. A quick way: copy the words from the line in the PDF.
 - **Include the unit in your results where you can.** A `unit` of `m`, `m2`, `hours`, `%` or `storeys` stops a 3 metre figure being matched to "3 hours of sunlight". Other units (tonnes, GJ, ML) are accepted but make no difference yet.
-- **Two years side by side on one line:** it confirms the number is on the line but doesn't pick the year.
+- **A number that sits on the same line for another reason (a date, a year): it is on the line, so it passes. Two years side by side on one line:** it confirms the number is on the line but doesn't pick the year.
 
 ## What's inside
 
 - `proof_layer/locate.py`: finds the part of the page that discusses the item, then checks the number there.
 - `proof_layer/integrity.py`: the number check itself. It recognises the legitimate ways a number can be written differently (35% as 0.35, 900 mm as 0.9 m).
-- `tests/`: 96 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
+- `tests/`: 105 passing tests, plus 6 marked expected failures that record the cases above. The code above is run as a test.
 - `benchmarks/`: the test scripts and saved results.
 
 Apache-2.0. Copyright 2026 Lawrence McDonell.

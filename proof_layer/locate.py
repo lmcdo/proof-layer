@@ -53,6 +53,14 @@ def _found(value, text: str, unit) -> bool:
     return explain_value(value, text, unit)[0] not in FAILING_STATES
 
 
+def _without_label_digits(row: str, want: list[str]) -> str:
+    """Blank the first written copy of each digit in the label ("Scope 3"), so that the label's own
+    digit is never mistaken for the claimed number."""
+    for d in {t for t in want if t.isdigit()}:
+        row = re.sub(rf"(?<![\d.,]){d}(?![\d]|[.,]\d)", " ", row, count=1)
+    return row
+
+
 def _candidate_rows(want: list[str], lines: list[str], line_tokens: Optional[list] = None) -> list[int]:
     """Rows that best match the label. Digits in the label must all be on the row.
 
@@ -87,7 +95,7 @@ def check_claim(label: str, value, page_text: Optional[str], unit=None) -> dict:
         float(value)
     except (TypeError, ValueError):
         return _result(UNKNOWN, "the claimed value is not a number")
-    want = _tokens(label)
+    want = _tokens(str(label))
     if not [t for t in want if not t.isdigit()]:
         return _result(UNKNOWN, "the label is too short to locate a row")
 
@@ -105,7 +113,7 @@ def check_claim(label: str, value, page_text: Optional[str], unit=None) -> dict:
         if i + 1 < len(lines) and not _tokens(lines[i + 1]):
             window += " " + lines[i + 1]
         windows.append(window)
-        if _found(value, window, unit):
+        if _found(value, _without_label_digits(window, want), unit):
             hits.append(window)
     shown = [w[:140] for w in windows[:3]]   # the line(s) the claim was checked against
     if hits and len(rows) == 1:

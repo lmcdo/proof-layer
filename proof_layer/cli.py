@@ -44,12 +44,28 @@ def _norm(text: str) -> str:
 def check_stored(name, value, quote, page, doc, unit):
     """A stored figure with the text it came from: is the number in the text, is the text in the PDF?"""
     from .integrity import FAILING_STATES, MISSING_SOURCE_TEXT, explain_value
+    from .integrity import NO_VALUE_STORED
+    if not any(p.text.strip() for p in doc.pages):
+        return {"verdict": "UNKNOWN", "reason": "the PDF has no text to check against"}
+    try:
+        page = int(page) if page is not None else None
+    except (TypeError, ValueError):
+        page = None
     state, _ = explain_value(value, quote, unit)
+    if state == NO_VALUE_STORED:
+        return {"verdict": "UNKNOWN", "reason": "no numeric value was stored"}
     if state == MISSING_SOURCE_TEXT:
         return {"verdict": "UNKNOWN", "reason": "no source text was stored with this number"}
     if state in FAILING_STATES:
         return {"verdict": "WRONG_FOR_LABEL", "lines": [f"the stored text: {str(quote)[:140]}"],
                 "reason": "the stored number is not in the text it was taken from"}
+    from .locate import FOUND_IN_ROW, check_claim
+    said = check_claim(str(name), value, str(quote), unit)["verdict"] if name else FOUND_IN_ROW
+    if said == "UNKNOWN":
+        return {"verdict": "UNKNOWN", "reason": "the stored text does not mention this item; check it by eye"}
+    if said != FOUND_IN_ROW:
+        return {"verdict": "WRONG_FOR_LABEL", "lines": [f"the stored text: {str(quote)[:140]}"],
+                "reason": "the stored text is not about this item, or the number is not where it discusses it"}
     want = _norm(quote)
     where = [p.number for p in doc.pages if want in _norm(p.text)]
     if page is not None and page in where:
@@ -66,10 +82,10 @@ def check_stored(name, value, quote, page, doc, unit):
 def load_rows(path: str) -> list:
     if path.lower().endswith((".txt", ".md")):
         from .claims import extract_claims
-        text = open(path, encoding="utf-8").read()
+        text = open(path, encoding="utf-8-sig").read()
         return [{"name": c.description, "value": c.value, "unit": c.unit, "scaled": c.scaled}
                 for c in extract_claims(text)]
-    return json.load(open(path, encoding="utf-8"))
+    return json.load(open(path, encoding="utf-8-sig"))
 
 
 def main(argv=None) -> int:
@@ -77,11 +93,23 @@ def main(argv=None) -> int:
     if len(argv) != 2:
         print(__doc__)
         return 2
-    doc = load_pages(argv[0])
-    rows = load_rows(argv[1])
+    try:
+        doc = load_pages(argv[0])
+        rows = load_rows(argv[1])
+    except (OSError, ValueError) as e:        # missing file, not a PDF, not valid JSON
+        print(f"cannot read the input: {e}", file=sys.stderr)
+        return 2
+    if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+        print('results.json must be a list of figures like [{"name": "...", "value": 1}]', file=sys.stderr)
+        return 2
+    if not rows:
+        print("no figures found to check; nothing was verified", file=sys.stderr)
+        return 2
     bad = 0
     for row in rows:
         name, value = _pick(row, NAME), _pick(row, VALUE)
+        if not isinstance(row.get("unit"), str):
+            row = {**row, "unit": None}
         quote = _pick(row, QUOTE)
         if quote is not None:
             r = check_stored(name, value, quote, row.get("page"), doc, row.get("unit"))

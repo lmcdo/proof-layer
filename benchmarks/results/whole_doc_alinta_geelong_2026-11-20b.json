@@ -1,0 +1,93 @@
+{
+  "skipped_no_label": 411,
+  "docs": [
+    "alinta.pdf",
+    "geelong.pdf"
+  ],
+  "styles": {
+    "verbatim": {
+      "true_claims": 189,
+      "held_back_true": 0.4339,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 79,
+        "FOUND_IN_ROW": 107,
+        "UNKNOWN": 2,
+        "WRONG_FOR_LABEL": 1
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "AMBIGUOUS_LABEL": 41,
+        "ABSENT": 506,
+        "WRONG_FOR_LABEL": 333,
+        "UNKNOWN": 9
+      },
+      "wrong_that_passed": 0
+    },
+    "extra": {
+      "true_claims": 189,
+      "held_back_true": 0.4656,
+      "true_verdicts": {
+        "UNKNOWN": 24,
+        "FOUND_IN_ROW": 101,
+        "AMBIGUOUS_LABEL": 43,
+        "ABSENT": 2,
+        "WRONG_FOR_LABEL": 19
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "UNKNOWN": 50,
+        "ABSENT": 510,
+        "WRONG_FOR_LABEL": 323,
+        "AMBIGUOUS_LABEL": 6
+      },
+      "wrong_that_passed": 0
+    },
+    "reordered": {
+      "true_claims": 189,
+      "held_back_true": 0.4339,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 79,
+        "FOUND_IN_ROW": 107,
+        "UNKNOWN": 2,
+        "WRONG_FOR_LABEL": 1
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "AMBIGUOUS_LABEL": 41,
+        "ABSENT": 506,
+        "WRONG_FOR_LABEL": 333,
+        "UNKNOWN": 9
+      },
+      "wrong_that_passed": 0
+    }
+  },
+  "whole_page_without_label_for_comparison": {
+    "held_back_true": 0.0,
+    "catch_rate": 0.757,
+    "wrong_n": 889
+  }
+}

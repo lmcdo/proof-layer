@@ -20,7 +20,7 @@ from dataclasses import dataclass
 _NUMBER = re.compile(r"(?<![\w.])[-−]?\$?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
 _BULLET = re.compile(r"^\s*(?:[-*•]|\d{1,2}[.)])\s+")
 _SENTENCE_END = re.compile(r"(?<=[.!?;])\s+(?=[A-Z(\"'*])|;\s+")
-_SCALE = re.compile(r"^\s?(million|billion|trillion|thousand|bn|k)\b", re.I)
+_SCALE = re.compile(r"^\s?(million|billion|trillion|thousand|mn|bn|k)\b", re.I)
 
 #: units the checker understands, in the order they are tried
 _UNITS = (
@@ -106,9 +106,9 @@ def _figures_in(sentence: str) -> list[tuple[re.Match, str, float]]:
     return out
 
 
-def _unit_and_scale(sentence: str, end: int) -> tuple[str | None, bool]:
+def _unit_and_scale(sentence: str, end: int, token: str = "") -> tuple[str | None, bool]:
     rest = sentence[end:]
-    if _SCALE.match(rest):
+    if _SCALE.match(rest) or (token.lstrip("-−").startswith("$") and re.match(r"m"+chr(92)+"b", rest, re.I)):
         return None, True
     for pattern, unit in _UNITS:
         if pattern.match(rest):
@@ -123,13 +123,15 @@ def _from_sentence(sentence: str) -> list[Claim]:
     prev_end = 0
     for k, (m, token, value) in enumerate(figures):
         between = sentence[prev_end: m.start()]
+        if k > 0:
+            between = _SCALE.sub("", between, count=1)   # "5.2 million and Scope 1 ...": drop the scale word
         description = _clean_words(between)
         if k > 0 and len(description.split()) < 2:
             description = last_description               # "... from 6,102 to 5,845": same item
         if not description:                              # "19,691 tCO2-e of Scope 1 emissions"
             next_start = figures[k + 1][0].start() if k + 1 < len(figures) else len(sentence)
             description = _clean_words(sentence[m.end(): next_start])
-        unit, scaled = _unit_and_scale(sentence, m.end())
+        unit, scaled = _unit_and_scale(sentence, m.end(), token)
         if description:
             claims.append(Claim(description, token, value, unit, scaled, sentence.strip()))
             last_description = description
@@ -147,7 +149,7 @@ def _from_table_row(line: str) -> list[Claim]:
     claims = []
     for cell in cells[1:]:
         for m, token, value in _figures_in(cell):
-            unit, scaled = _unit_and_scale(cell, m.end())
+            unit, scaled = _unit_and_scale(cell, m.end(), token)
             claims.append(Claim(label, token, value, unit, scaled, line.strip()))
             break                                        # one figure per cell
     return claims

@@ -1,0 +1,92 @@
+{
+  "skipped_no_label": 411,
+  "docs": [
+    "alinta.pdf",
+    "geelong.pdf"
+  ],
+  "styles": {
+    "verbatim": {
+      "true_claims": 189,
+      "held_back_true": 0.2434,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 43,
+        "FOUND_IN_ROW": 143,
+        "UNKNOWN": 2,
+        "WRONG_FOR_LABEL": 1
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "AMBIGUOUS_LABEL": 31,
+        "ABSENT": 666,
+        "WRONG_FOR_LABEL": 183,
+        "UNKNOWN": 9
+      },
+      "wrong_that_passed": 0
+    },
+    "extra": {
+      "true_claims": 189,
+      "held_back_true": 0.3175,
+      "true_verdicts": {
+        "UNKNOWN": 36,
+        "FOUND_IN_ROW": 129,
+        "WRONG_FOR_LABEL": 9,
+        "AMBIGUOUS_LABEL": 15
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "UNKNOWN": 43,
+        "ABSENT": 673,
+        "WRONG_FOR_LABEL": 172,
+        "AMBIGUOUS_LABEL": 1
+      },
+      "wrong_that_passed": 0
+    },
+    "reordered": {
+      "true_claims": 189,
+      "held_back_true": 0.2434,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 43,
+        "FOUND_IN_ROW": 143,
+        "UNKNOWN": 2,
+        "WRONG_FOR_LABEL": 1
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 889,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "AMBIGUOUS_LABEL": 31,
+        "ABSENT": 666,
+        "WRONG_FOR_LABEL": 183,
+        "UNKNOWN": 9
+      },
+      "wrong_that_passed": 0
+    }
+  },
+  "whole_page_without_label_for_comparison": {
+    "held_back_true": 0.0,
+    "catch_rate": 0.757,
+    "wrong_n": 889
+  }
+}
