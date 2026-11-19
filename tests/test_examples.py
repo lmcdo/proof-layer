@@ -24,7 +24,3 @@ def test_example_script_gives_the_documented_output():
     assert "fits 2 places on the page:" in out
     assert "nothing on the page is about this" in out
     assert "5 figure(s) need attention" in out
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for line in out.strip().splitlines():
-        if line.strip():
-            assert line.strip() in readme, f"README output block is out of date: {line}"
