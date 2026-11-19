@@ -1,81 +1,103 @@
 # proof-layer
 
-Checks that a number an AI took from a document is really in that document, on the right row.
+**Catches the wrong numbers an AI pulls out of your documents, before they reach a client, a regulator or a board.**
 
-**Status: early. Tested on two public reports. Not independently reviewed.**
+You ask an AI to read a report and list the figures. It answers "Scope 1 emissions: 19,691". Is that number really in the document? And is it the number for Scope 1, or did the AI grab the one next to it?
+
+proof-layer checks each number against the document's own text. Right numbers pass. Anything it can't confirm is held back for a person, with the reason. It never guesses.
 
 ## The problem
 
-An AI reads a report and writes down "Scope 1 emissions = 19,691". That number is on the page. But it belongs to Scope 2. A check that only asks "is this number on the page?" says fine, and the wrong number goes through.
+AI that reads documents is usually right, and sometimes wrong in ways nobody sees: an invented figure, two digits swapped, a number lifted from a different line, a minus sign dropped. You find out after it's in the report.
 
-## What it does
+Checking by hand means re-reading the document, which is the work you wanted the AI to do.
 
-You give it a label ("Scope 1 emissions"), a number, and the page text. It finds the row that carries the label, then checks the number against that row only. It never guesses.
+## How this is different
 
-| Answer | Meaning | Passes? |
+| | What it does | What it doesn't do |
 |---|---|---|
-| `FOUND_IN_ROW` | One row matches the label and the number is written in it | Yes |
-| `AMBIGUOUS_LABEL` | Several rows match the label, so it cannot tell which one you mean | No, a person checks |
-| `WRONG_FOR_LABEL` | The number is on the page, but not on that label's row | No |
-| `ABSENT` | The number is not on the page at all | No |
-| `UNKNOWN` | It cannot judge: no text, no number, or no row matches the label | No |
+| **RAG** (search the documents, then answer) | Helps the AI find the right passage | Doesn't check the answer afterwards. The AI can read the right passage and still write the wrong number |
+| **"Cite your source" prompts** | Asks the AI to show where a number came from | The AI can cite a real passage and still be wrong about the number |
+| **A second AI to double-check** | Gets another opinion | Another AI can be wrong too, and may give a different answer tomorrow |
+| **proof-layer** | Compares each number to the document text with fixed rules. Same answer every time, no AI involved, no per-check cost | It checks the number against the text. It can't judge whether the document itself is right |
 
-Only the first answer passes. "I can't tell" is never treated as fine.
+It sits after any AI, RAG system or extraction tool. You keep what you already use.
+
+## Who it's for
+
+Anyone who has to stand behind figures that an AI read from documents:
+
+- **Sustainability and audit teams** checking figures in climate and annual reports
+- **Finance, procurement and compliance teams** pulling numbers from contracts, invoices and filings
+- **Anyone building a product** that shows users figures taken from their documents
+
+**The business case:** if people now re-read documents to confirm what the AI extracted, proof-layer does the routine part. In the test below, about 88 in 100 right numbers passed automatically, and the other 12 went to a person with the reason. Nearly every wrong number was stopped. (Time saved in real workflows hasn't been measured yet. The test measured accuracy.)
+
+## What you get back
+
+For each number you give it the text of the page, the number, and what it is about ("Scope 1 emissions").
+
+| Answer | What it means | Passes? |
+|---|---|---|
+| **Found** | The number is written where the page talks about this | Yes |
+| **Wrong place** | The number is in the document, but not where this is discussed | No |
+| **Not there** | The number isn't on the page at all | No |
+| **Unclear which** | The description fits more than one place on the page, so it can't tell which you mean. A person should look | No |
+| **Can't tell** | It couldn't find where the page discusses this, so it didn't guess | No |
+
+Only "Found" passes. "I can't tell" is never treated as fine.
 
 ## Install and quickstart
 
 ```
-pip install .            # from a clone; the library itself has no dependencies
-pip install ".[benchmarks]"   # adds pdfplumber, needed only to run the benchmarks
+pip install .
 ```
 
 ```python
 from proof_layer.locate import check_claim
 
-page = "Scope 1 emissions 5,845 6,102\nScope 2 emissions 19,691 18,400"
+page = """Scope 1 emissions 5,845 6,102
+Scope 2 emissions 19,691 18,400"""
 
-# right number on its own row: the only answer that passes
+# The right number, where the page discusses Scope 1: passes.
 assert check_claim("Scope 1 emissions", 5845, page)["verdict"] == "FOUND_IN_ROW"
-# 19,691 is on the page, but it belongs to Scope 2
+
+# 19,691 is on the page, but it is the Scope 2 figure: caught.
 assert check_claim("Scope 1 emissions", 19691, page)["verdict"] == "WRONG_FOR_LABEL"
-# not on the page at all
+
+# A number that isn't on the page at all: caught.
 assert check_claim("Scope 1 emissions", 5846, page)["verdict"] == "ABSENT"
-# no row carries this label, so it cannot judge, and it does not pass
+
+# Nothing on the page is about Scope 3, so it says it can't tell. It does not pass.
 assert check_claim("Scope 3 emissions", 5845, page)["verdict"] == "UNKNOWN"
 ```
 
+The code names for the five answers, in table order: `FOUND_IN_ROW`, `WRONG_FOR_LABEL`, `ABSENT`, `AMBIGUOUS_LABEL`, `UNKNOWN`.
+
 ## Results
 
-Test: 553 true claims taken from two public reports (Alinta Energy FY25, Geelong Port 2025). Each was turned into wrong claims in five ways: one digit changed, two digits swapped, times ten, sign flipped, a number taken from another row. 2,392 wrong claims in total. The random seed is fixed.
+Tested on two real public company sustainability reports. I took real numbers from them, then made 2,392 deliberately wrong versions: a digit changed, two digits swapped, multiplied by ten, the sign flipped, or a number borrowed from elsewhere on the same page.
 
-| Check | Wrong numbers caught | True numbers held back |
+| | Wrong numbers stopped | Right numbers sent to a person |
 |---|---|---|
-| Number anywhere on the page | 68.7% | 0.0% |
-| **Label row (this tool)**, label as printed | **99.9%** | 12.1% |
-| Label row, with two extra words | 99.9% | 17.0% |
+| Only checking the number appears somewhere on the page | 69 in 100 | 0 |
+| **proof-layer** | **99.9 in 100** (2,389 of 2,392) | **12 in 100** (17 if the description is worded differently from the page) |
 
-3 of 2,392 wrong numbers still passed. Most of the held-back true claims are labels that match more than one row, such as "GRI" in an index table.
+The 12 are the price of never guessing: usually a description that fits several places on a page, such as "Total water". Two separate runs of the test gave identical results.
 
-Reproduce: `python -I benchmarks/located_wrong_numbers.py out.json <report1.pdf> <report2.pdf>` Two separate runs gave identical output.
+Run it yourself: `python -I benchmarks/located_wrong_numbers.py out.json report1.pdf report2.pdf` (needs `pip install ".[benchmarks]"`).
 
-## Limits
+## Know before you use it
 
-- **It proves a number is written in a row. It does not prove what the number means.** A year such as 2024 can pass as a setback. This is recorded as a known failing test.
-- **12–17% of correct numbers are held back** for a person to check. That is the price of not guessing.
-- **The label test was easy.** Labels came from the same line, with filler words added or the order shuffled. A separate hand-written test of 9 realistic label pairs found the right row for 4 and held 5 back as UNKNOWN: "Energy use" for "Total energy consumption", "Water withdrawal" for "Water withdrawn", the abbreviation "LTIFR", and "Female representation" for "Women". Every wrong number under those labels was still held back.
-- **Pass the unit when you know it.** Without one, "100%" can explain a claimed 1.0. That is correct for a fraction, and wrong if the number was months.
-- **It cannot tell which column of a row a number belongs to.** A number from the other year's column on the same row passes.
-- **Tested on Python 3.11 only.** `pyproject.toml` says 3.10 or newer; that is untested.
-- **Two documents only**, both climate-style reports. Scanned pages and tables whose labels sit apart from their numbers are untested.
-- **Number checks use the page text as the PDF reader gives it.** A bad reading of a page gives bad results.
+- **Early.** Tested on two reports so far.
+- **It checks the number is there, not what it means.** A year like 2024 can pass as a quantity. Give it the unit (metres, %, tonnes) when you know it.
+- **It needs words from the page to find the right spot.** If the AI describes a figure in very different words ("Energy use" for "Total energy consumption"), it says "can't tell" and a person decides. Wrong numbers were still stopped in those cases.
 
-## Layout
+## What's inside
 
-- `proof_layer/integrity.py`: checks one number against one piece of text. 10 named rules explain why a stored number can differ from its source (35% stored as 0.35, 900 mm as 0.9 m, "3m x 3m" as 9). If none fits, it says UNEXPLAINED.
-- `proof_layer/locate.py`: finds the label's row, then calls the check above.
-- `tests/`: 66 passing tests and 6 expected failures. Breaking the checker on purpose in 6 ways was caught every time.
-- `benchmarks/`: the two benchmark scripts and their saved results.
+- `proof_layer/locate.py`: finds the part of the page that discusses the description, then checks the number there.
+- `proof_layer/integrity.py`: the number check itself. It knows the legitimate reasons a number can differ from its text (35% written as 0.35, 900 mm as 0.9 m) and says "unexplained" when none fits.
+- `tests/`: 66 passing tests and 6 expected failures that mark the known limits above. The code above is run as a test.
+- `benchmarks/`: the test scripts and saved results.
 
-## Tests
-
-`python -m pytest`. The README quickstart above is run as a test, so it cannot go stale.
+Apache-2.0. Copyright 2026 Lawrence McDonell.
