@@ -108,6 +108,8 @@ So she can submit 2 figures with the page to point to, fix 1 (it caught the Scop
 
 **No table? Paste the answer instead.** If you just have the AI's written reply, save it as `answer.txt` and run `proof-layer sample_report.pdf answer.txt`. It finds every figure in the text and checks each one the same way (try `examples/ai_answer.txt`). Figures written as "5.2 million" are handed to you to check by eye.
 
+**Want to see what it's asking about?** Add `--sheet check.html`: `proof-layer sample_report.pdf results.json --sheet check.html`. It writes one page with a picture of the PDF around each figure that needs a look, the number highlighted. A glance settles most of them. (In a test on 43 figures from two real reports, 24 of the 28 needing a look got a picture.)
+
 **Figures kept in a database?** If each stored figure also has the text it was taken from, add that as `source_text` (and `page` if you have it) in `results.json`. It then checks two things: the stored number really is in that text, and that text really is in the PDF, on that page. It catches a number that drifted after extraction and a saved quote that isn't in the document. Try `examples/stored_rows.json`.
 
 `sample_report.pdf` is a made-up one-page report in the `examples` folder, so you can run this yourself. You don't need page numbers: it searches the whole PDF and tells you the page. It exits with 1 if anything needs attention, so it can also stop a pipeline.

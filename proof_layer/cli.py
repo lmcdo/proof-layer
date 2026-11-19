@@ -7,6 +7,8 @@ in it is found and checked. Figures written as "5.2 million" are always passed t
 If a figure also carries the text it was taken from ("source_text", plus "page" if known), as it
 does when it is stored in a database, two things are checked: that the stored number really is in
 that text, and that the text really is in the PDF (on that page, if you gave one).
+Add --sheet check.html to also get one picture per figure that needs a look: the PDF page with
+the number highlighted (needs PyMuPDF).
 Exit code 0 if every figure is correct, 1 if any needs attention.
 """
 import json
@@ -90,6 +92,14 @@ def load_rows(path: str) -> list:
 
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    sheet = None
+    if "--sheet" in argv:
+        i = argv.index("--sheet")
+        sheet = argv[i + 1] if i + 1 < len(argv) else None
+        argv = argv[:i] + argv[i + 2:]
+        if not sheet:
+            print("--sheet needs a file name, e.g. --sheet check.html", file=sys.stderr)
+            return 2
     if len(argv) != 2:
         print(__doc__)
         return 2
@@ -106,6 +116,7 @@ def main(argv=None) -> int:
         print("no figures found to check; nothing was verified", file=sys.stderr)
         return 2
     bad = 0
+    to_look_at = []
     for row in rows:
         name, value = _pick(row, NAME), _pick(row, VALUE)
         if not isinstance(row.get("unit"), str):
@@ -130,6 +141,14 @@ def main(argv=None) -> int:
                 pg = ", ".join(map(str, r["found_pages"][:5]))
                 print(f"         the number is on page {pg}: {r['found_line']}")
         bad += word != "CORRECT"
+        if word != "CORRECT":
+            page = (r.get("found_pages") or r.get("pages") or [row.get("page")])[0] if (r.get("found_pages") or r.get("pages") or row.get("page")) else None
+            to_look_at.append({"word": word, "name": name, "value": value, "shown": shown, "page": page,
+                               "why": r.get("reason") or "the number is not where this item is discussed"})
+    if sheet and to_look_at:
+        from .sheet import write_sheet
+        n = write_sheet(argv[0], to_look_at, sheet)
+        print(f"\n{n} figures to look at, with the page pictured: {sheet}")
     print("\nall correct" if not bad else f"\n{bad} need attention")
     return 1 if bad else 0
 

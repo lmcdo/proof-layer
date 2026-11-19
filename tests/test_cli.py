@@ -95,3 +95,16 @@ def test_dollar_millions_are_scaled_but_metres_are_not():
     c = extract_claims("Minimum setback is 3 m from the boundary.")[0]
     assert not c.scaled and c.unit == "m"
     assert extract_claims("Revenue was 5.2 million and Scope 1 emissions fell to 5,845 tonnes.")[1].description == "Scope 1 emissions"
+
+
+def test_sheet_pictures_the_page_for_each_figure_that_needs_a_look(tmp_path):
+    pytest.importorskip("fitz")
+    out = tmp_path / "check.html"
+    env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
+    done = subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf",
+                           "examples/results.json", "--sheet", str(out)],
+                          cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
+    page = out.read_text(encoding="utf-8")
+    assert done.returncode == 1 and "2 figures to look at" in page
+    assert page.count("<img src=\"data:image/png;base64,") >= 1
+    assert "Scope 1 emissions = 19,691" in page

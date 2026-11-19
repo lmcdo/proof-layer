@@ -17,7 +17,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-pdf = ["pdfplumber"]
+pdf = ["pdfplumber", "pymupdf"]
 benchmarks = ["pdfplumber"]
 test = ["pytest"]
 
