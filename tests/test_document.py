@@ -68,3 +68,8 @@ def test_unit_still_stops_the_wrong_kind_of_quantity():
     doc = Document.from_texts(["Minimum setback 3 hours of sunlight is required on site"])
     assert check_in_document("Minimum setback", 3, doc)["verdict"] == FOUND_IN_ROW
     assert check_in_document("Minimum setback", 3, doc, unit="m")["verdict"] == ABSENT
+
+
+def test_a_confirm_names_the_pages_where_the_number_was_found():
+    r = check_in_document("Scope 1 emissions", 5845, Document.from_texts([P1, P3, P4]))
+    assert r["verdict"] == AMBIGUOUS_LABEL and r["found_pages"] == [1, 2] and "5,845" in r["found_line"]

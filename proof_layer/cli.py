@@ -126,6 +126,9 @@ def main(argv=None) -> int:
             print(f"         {r['reason']}" if quote is not None else f"         the report says: {r['lines'][0]}")
         if word == "CHECK":
             print(f"         {r['reason']}")
+            if r.get("found_pages"):
+                pg = ", ".join(map(str, r["found_pages"][:5]))
+                print(f"         the number is on page {pg}: {r['found_line']}")
         bad += word != "CORRECT"
     print("\nall correct" if not bad else f"\n{bad} need attention")
     return 1 if bad else 0

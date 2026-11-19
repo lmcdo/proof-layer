@@ -91,7 +91,9 @@ def check_in_document(label: str, value, doc: Document, unit: Optional[str] = No
     if with_number:
         return _result(AMBIGUOUS_LABEL,
                        f"{len(seen)} places in the document fit; the number is in {len(with_number)} of them",
-                       candidates=len(seen), pages=pages, lines=shown)
+                       candidates=len(seen), pages=pages, lines=shown,
+                       found_pages=sorted({n for n, _ in with_number}),
+                       found_line=with_number[0][1][:140])
     elsewhere = _number_elsewhere(value, doc, unit)
     if seen:
         verdict = WRONG_FOR_LABEL if elsewhere else ABSENT
