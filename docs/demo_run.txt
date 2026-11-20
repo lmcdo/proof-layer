@@ -1,0 +1,10 @@
+CORRECT  Scope 1 emissions = 5,845, page 1
+CORRECT  Emissions from our own fuel use = 5,845, page 1
+WRONG    Scope 1 emissions = 19,691
+         The AI read the text and says the number belongs to something else.
+CORRECT  Energy we used = 1,074,807, page 1
+CORRECT  Water withdrawn in water-stressed areas = 3.8, page 1
+WRONG    Scope 3 emissions = 5,845
+         The stored text is not in the PDF.
+
+2 of 6 need your attention: 2 wrong, 0 to check.

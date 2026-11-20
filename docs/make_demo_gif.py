@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "demo.gif"
-COMMAND = "proof-layer sample_report.pdf results.json"
+COMMAND = "proof-layer sample_report.pdf answer.json --judge claude"
 
 BG, FG, DIM = (13, 17, 23), (201, 209, 217), (125, 133, 144)
 SOFT = (170, 180, 192)
@@ -27,10 +27,9 @@ W, PAD, FONT_SIZE, LINE = 1060, 28, 19, 30
 
 
 def real_output() -> list[str]:
-    env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
-    done = subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf", "examples/results.json"], cwd=ROOT, env=env,
-                          capture_output=True, text=True, encoding="utf-8")
-    return done.stdout.splitlines()
+    """The saved output of a real run: python -m proof_layer.cli examples/sample_report.pdf examples/answer.json --judge claude
+    (re-record it with that command; the GIF is drawn from the file, not typed by hand)."""
+    return (ROOT / "docs" / "demo_run.txt").read_text(encoding="utf-8").splitlines()
 
 
 def word_of(line: str):
@@ -55,12 +54,12 @@ def report_lines() -> list[str]:
     import pdfplumber
     with pdfplumber.open(ROOT / "examples" / "sample_report.pdf") as pdf:
         text = pdf.pages[0].extract_text()
-    return [ln for ln in text.splitlines() if ln.startswith(("Scope 1", "Scope 2", "Total energy"))]
+    return [ln for ln in text.splitlines() if ln.startswith(("Scope 1", "Scope 2", "Total energy", "Water withdrawn in water"))]
 
 
 def ai_lines() -> list[str]:
     import json
-    rows = json.load(open(ROOT / "examples" / "results.json", encoding="utf-8"))
+    rows = json.load(open(ROOT / "examples" / "answer.json", encoding="utf-8"))
     return [f"{r['name']} = {r['value']:,}" for r in rows]
 
 
@@ -76,14 +75,14 @@ def draw_frame(font, height, stage, command_shown, shown_blocks, summary, cursor
         y += LINE
     y += 12
     if stage >= 2:
-        d.text((PAD, y), "2. An AI read it and gave you these 4 figures:", font=font, fill=FG)
+        d.text((PAD, y), "2. An AI read it and gave you these 6 figures (each with its page and quote):", font=font, fill=FG)
         y += LINE
         for ln in ai:
             d.text((PAD + 20, y), ln, font=font, fill=SOFT)
             y += LINE
         y += 12
     if stage >= 3:
-        d.text((PAD, y), "3. proof-layer checks each figure against the PDF:", font=font, fill=FG)
+        d.text((PAD, y), "3. proof-layer checks each one, and your AI settles the unclear ones by itself:", font=font, fill=FG)
         y += LINE + 4
         d.text((PAD, y), "$ " + command_shown + ("_" if cursor else ""), font=font, fill=FG)
         y += LINE + 8
@@ -106,11 +105,11 @@ def main() -> None:
     font = ImageFont.truetype("C:/Windows/Fonts/consola.ttf", FONT_SIZE)
     lines = [ln for ln in real_output() if ln.strip()]
     blocks = blocks_of(lines)
-    assert len(blocks) == 4, f"expected 4 figures, got {len(blocks)}"
+    assert len(blocks) == 6, f"expected 6 figures, got {len(blocks)}"
     assert "need your attention" in lines[-1], "unexpected output"
     summary = lines[-1].strip()
     report, ai = report_lines(), ai_lines()
-    assert len(report) == 3 and len(ai) == 4
+    assert len(report) == 4 and len(ai) == 6
     height = (PAD * 2 + LINE * (1 + len(report)) + 12 + LINE * (1 + len(ai)) + 12 + LINE + 4 + LINE + 8
               + LINE * sum(len(b) for b in blocks) + 8 + LINE)
 

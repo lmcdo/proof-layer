@@ -143,3 +143,17 @@ def test_ai_answers_settle_only_what_was_asked(tmp_path):
 def test_sheet_looks_for_a_loss_by_its_digits():
     from proof_layer.sheet import _forms
     assert "4,153" in _forms(-4153) and "952.5" in _forms(-952.5)
+
+
+def test_judge_runs_the_ai_by_itself_and_leaves_only_exceptions(tmp_path):
+    fake = ROOT / "tests" / "fake_judge.py"
+    cmd = f'"{sys.executable}" "{fake}"'
+    rows = [QROW, {**QROW, "name": "Emissions from combustion"}, {**QROW, "value": 7777}]
+    d = _run_flags(tmp_path, rows, "--judge", cmd)
+    assert d.stdout.count("CORRECT") == 2 and "1 of 3 need your attention" in d.stdout
+    assert "WRONG" in d.stdout and d.returncode == 1
+
+
+def test_a_broken_judge_leaves_the_figures_for_a_person_and_does_not_crash(tmp_path):
+    d = _run_flags(tmp_path, [QROW], "--judge", f'"{sys.executable}" -c "print(1)"')
+    assert "CHECK" in d.stdout and "Traceback" not in d.stderr and d.returncode == 1

@@ -7,6 +7,8 @@ in it is found and checked. Figures written as "5.2 million" are always passed t
 If a figure also carries the text it was taken from ("source_text", plus "page" if known), as it
 does when it is stored in a database, two things are checked: that the stored number really is in
 that text, and that the text really is in the PDF (on that page, if you gave one).
+Add --judge claude (or any command that reads a prompt on stdin and prints the answer) and the
+tool asks your own AI to settle the unclear figures by itself; only the rare exceptions are left.
 Add --ask-ai items.json to write the figures it cannot settle, with the surrounding text, for your AI to
 read; give the AI's reply back with --answers answers.json. An AI "yes" only counts where the number is
 already in the stored text and that text is in the PDF, so the AI cannot approve an invented number.
@@ -15,6 +17,7 @@ the number highlighted (needs PyMuPDF).
 Exit code 0 if every figure is correct, 1 if any needs attention.
 """
 import json
+import os
 import re
 import sys
 
@@ -63,6 +66,38 @@ JUDGE_INSTRUCTIONS = (
     "something else. Answer 'unsure' if you cannot tell; a number merely nearby is not 'yes'. Reply with a "
     "JSON list: [{\"id\": 0, \"answer\": \"yes\"}, ...] and save it, then run proof-layer again with "
     "--answers that-file.json")
+
+def run_judge(command: str, items: list) -> dict:
+    """Ask the user's own AI (any command that reads a prompt on stdin and prints JSON) to settle the items.
+
+    Returns {id: "yes"|"no"|"unsure"}. Anything that goes wrong returns what was answered so far; the
+    unanswered figures simply stay in the list for a person."""
+    import shlex
+    import subprocess
+    import tempfile
+    if command.strip() == "claude":
+        # Claude Code as a plain judge: no tools, no project settings, nothing saved, nothing for it to edit.
+        argv = ["claude", "-p", "--tools", "", "--no-session-persistence", "--setting-sources", ""]
+    else:
+        argv = [t.strip('"') for t in shlex.split(command, posix=(os.name != "nt"))]
+    answers: dict = {}
+    for start in range(0, len(items), 25):
+        batch = items[start:start + 25]
+        prompt = JUDGE_INSTRUCTIONS + "\n\n" + json.dumps(batch, ensure_ascii=False, indent=1)
+        for attempt in (1, 2):           # one retry: an AI call can stall
+            try:
+                done = subprocess.run(argv, input=prompt, text=True, encoding="utf-8", capture_output=True,
+                                      timeout=180, cwd=tempfile.gettempdir())
+                out = done.stdout
+                got = json.loads(out[out.index("["): out.rindex("]") + 1])
+                answers.update({int(a["id"]): str(a["answer"]).strip().lower() for a in got})
+                break
+            except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as e:
+                if attempt == 2:
+                    print(f"the AI step did not work ({type(e).__name__}); those figures are left for you",
+                          file=sys.stderr)
+    return answers
+
 
 QUOTE = ("source_text", "quote", "evidence", "source")
 
@@ -132,7 +167,7 @@ def load_rows(path: str) -> list:
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     flags = {}
-    for flag in ("--sheet", "--ask-ai", "--answers"):
+    for flag in ("--sheet", "--ask-ai", "--answers", "--judge"):
         if flag in argv:
             i = argv.index(flag)
             if i + 1 >= len(argv):
@@ -165,6 +200,20 @@ def main(argv=None) -> int:
         except (OSError, ValueError, KeyError, TypeError) as e:
             print(f"cannot read the AI's answers: {e}", file=sys.stderr)
             return 2
+    if "--judge" in flags and not answers:
+        pending = []
+        for idx, row in enumerate(rows):
+            quote = _pick(row, QUOTE)
+            if quote is None:
+                continue
+            first = check_stored(_pick(row, NAME), _pick(row, VALUE), quote, row.get("page"), doc,
+                                 row.get("unit") if isinstance(row.get("unit"), str) else None)
+            if first.get("judge"):
+                pending.append({"id": idx, "name": _pick(row, NAME), "value": _pick(row, VALUE),
+                                "quote": quote, "context": first["judge"]})
+        if pending:
+            print(f"asking your AI about {len(pending)} figures the code could not settle...", file=sys.stderr)
+            answers = run_judge(flags["--judge"], pending)
     ask = []
     bad = wrong = 0
     to_look_at = []

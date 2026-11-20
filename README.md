@@ -4,9 +4,9 @@ I've used AI every day for about two years. It kept making up figures, telling m
 
 **Every number your AI pulls from a document, checked against that document.**
 
-![proof-layer checking 4 figures an AI took from a report: 2 correct, 1 wrong, 1 to check](docs/demo.gif)
+![proof-layer checking 6 figures an AI took from a report: 4 correct, 2 wrong](docs/demo.gif)
 
-In the picture, the AI mixed up two items: it gave Scope 2's number (19,691) as Scope 1, so that one is **wrong**, and it gave a Scope 3 figure the report doesn't contain, so that one is **to check**. The other two are **correct**.
+In the picture, 6 figures came from an AI. Four are correct, including two where the AI described the item in its own words (your AI settled those by itself). Two are wrong: one is Scope 2's number given as Scope 1, and one is a Scope 3 figure the report doesn't contain. Only those two are left for you.
 
 An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks instead of guessing.
 
@@ -14,7 +14,9 @@ An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirm
 
 1. **Ask your AI the way [PROMPT.md](PROMPT.md) says.** It answers with each figure plus its page and the exact quote it came from. Save the reply as `answer.json`. Works with any AI that can read your PDF.
 2. **Run `proof-layer report.pdf answer.json`.** Code checks that each quote really is on that page and the number really is in it.
-3. **Settle the rest in one go.** Add `--ask-ai items.json`: it writes the few figures code can't settle, with the text around them. Your AI answers yes, no or unsure, and `--answers answers.json` applies that. What is still left comes with a picture of the page, number highlighted (`--sheet check.html`).
+3. **Add `--judge claude`.** The tool asks your own AI, by itself, about the few figures code can't settle (it uses Claude Code here; any command that reads a prompt and prints the answer works). It takes under a minute for a long report. What's still left comes back as the exceptions, and `--sheet check.html` pictures the page for each.
+
+So the whole thing is one command: `proof-layer report.pdf answer.json --judge claude`.
 
 ## What to expect (measured)
 
@@ -123,7 +125,7 @@ So she can submit 2 figures with the page to point to, fix 1 (it caught the Scop
 
 **No table? Paste the answer instead.** If you just have the AI's written reply, save it as `answer.txt` and run `proof-layer sample_report.pdf answer.txt`. It finds every figure in the text and checks each one the same way (try `examples/ai_answer.txt`). Figures written as "5.2 million" are handed to you to check by eye.
 
-**Let your AI settle the rest.** Some figures can't be settled by code alone, because a PDF's text often comes out with a number far from its label. `proof-layer report.pdf results.json --ask-ai items.json` writes those figures with the text around each, and instructions your AI can follow. Give its yes/no/unsure answers back with `--answers answers.json`. A "yes" only counts if the number is really in the saved text and that text is really on the PDF page, so the AI can't approve an invented number. In a test on 43 figures from two real reports, the tool alone asked for a look at 28; with an AI's answers it was 2 (one the AI said "unsure" about, and one that was really wrong). That is a small test: the AI's answers were not checked beyond those 43 and a separate set of 87 deliberately wrong claims, none of which it passed.
+**Let your AI settle the rest (manual version).** If you'd rather do the AI step yourself, or use an AI with no command line: `--ask-ai items.json` writes the unsettled figures with the text around each, and instructions your AI can follow; give its yes/no/unsure answers back with `--answers answers.json`. This is exactly what `--judge` automates. A "yes" only counts if the number is really in the saved text and that text is really on the PDF page, so the AI can't approve an invented number. In small tests: on 43 figures from two climate reports the code alone left 28 for a look and 2 with an AI's answers; on 35 figures from the Reserve Bank's annual report `--judge claude` left 5 (1 wrong, 4 the AI was unsure about). The AI's answers were not each checked by hand.
 
 **Want to see what it's asking about?** Add `--sheet check.html`: `proof-layer sample_report.pdf results.json --sheet check.html`. It writes one page with a picture of the PDF around each figure that needs a look, the number highlighted. A glance settles most of them. (In a test on 43 figures from two real reports, 24 of the 28 needing a look got a picture.)
 
