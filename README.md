@@ -6,6 +6,8 @@ I've used AI every day for about two years. It kept making up figures, telling m
 
 ![proof-layer checking 4 figures an AI took from a report: 2 correct, 1 wrong, 1 to check](docs/demo.gif)
 
+In the picture, the AI mixed up two items: it gave Scope 2's number (19,691) as Scope 1, so that one is **wrong**, and it gave a Scope 3 figure the report doesn't contain, so that one is **to check**. The other two are **correct**.
+
 An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks instead of guessing.
 
 ## Use it in 3 steps
