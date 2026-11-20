@@ -11,7 +11,7 @@ def test_cli_output_matches_the_readme():
     done = subprocess.run([sys.executable, "-m", "proof_layer.cli", "examples/sample_report.pdf", "examples/results.json"],
                           cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8")
     assert done.returncode == 1
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme = (ROOT / "docs" / "DETAILS.md").read_text(encoding="utf-8")
     for line in done.stdout.strip().splitlines():
         if line.strip():
             assert line.rstrip() in readme, line
