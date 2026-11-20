@@ -15,6 +15,7 @@ the number highlighted (needs PyMuPDF).
 Exit code 0 if every figure is correct, 1 if any needs attention.
 """
 import json
+import re
 import sys
 
 from .document import Document
@@ -37,6 +38,22 @@ def load_pages(pdf_path: str) -> Document:
     import pdfplumber
     with pdfplumber.open(pdf_path) as pdf:
         return Document.from_texts([p.extract_text() or "" for p in pdf.pages])
+
+
+PLAIN = {
+    "nothing in the document is clearly about this; the number appears elsewhere":
+        "The report doesn't clearly talk about this, though the number does appear elsewhere in it.",
+    "the number is not in the document": "The number is not anywhere in the report.",
+}
+
+
+def _plain(reason: str) -> str:
+    return PLAIN.get(reason, reason[:1].upper() + reason[1:] + ("" if reason.endswith(".") else "."))
+
+
+def _report_has(line: str) -> str:
+    m = re.match(r"p(\d+): (.*)", line)
+    return f"The report has, on page {m.group(1)}: {m.group(2)}" if m else f"The report has: {line}"
 
 
 JUDGE_INSTRUCTIONS = (
@@ -149,7 +166,7 @@ def main(argv=None) -> int:
             print(f"cannot read the AI's answers: {e}", file=sys.stderr)
             return 2
     ask = []
-    bad = 0
+    bad = wrong = 0
     to_look_at = []
     for idx, row in enumerate(rows):
         name, value = _pick(row, NAME), _pick(row, VALUE)
@@ -178,13 +195,14 @@ def main(argv=None) -> int:
         shown = f"{int(value):,}" if isinstance(value, (int, float)) and float(value).is_integer() else value
         print(f"{word:8s} {name} = {shown}{where}")
         if word == "WRONG" and r.get("lines"):
-            print(f"         {r['reason']}" if quote is not None else f"         the report says: {r['lines'][0]}")
+            print(f"         {_plain(r['reason'])}" if quote is not None else f"         {_report_has(r['lines'][0])}")
         if word == "CHECK":
-            print(f"         {r['reason']}")
+            print(f"         {_plain(r['reason'])}")
             if r.get("found_pages"):
                 pg = ", ".join(map(str, r["found_pages"][:5]))
-                print(f"         the number is on page {pg}: {r['found_line']}")
+                print(f"         The number is on page {pg}: {r['found_line']}")
         bad += word != "CORRECT"
+        wrong += word == "WRONG"
         if word != "CORRECT":
             page = (r.get("found_pages") or r.get("pages") or [row.get("page")])[0] if (r.get("found_pages") or r.get("pages") or row.get("page")) else None
             to_look_at.append({"word": word, "name": name, "value": value, "shown": shown, "page": page,
@@ -197,7 +215,8 @@ def main(argv=None) -> int:
         from .sheet import write_sheet
         n = write_sheet(argv[0], to_look_at, sheet)
         print(f"\n{n} figures to look at, with the page pictured: {sheet}")
-    print("\nall correct" if not bad else f"\n{bad} need attention")
+    print(f"\nAll {len(rows)} figures are correct." if not bad else
+          f"\n{bad} of {len(rows)} need your attention: {wrong} wrong, {bad - wrong} to check.")
     return 1 if bad else 0
 
 

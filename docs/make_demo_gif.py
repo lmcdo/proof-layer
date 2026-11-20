@@ -9,6 +9,7 @@ usage: python docs/make_demo_gif.py        (needs Pillow and the Consolas font o
 """
 import os
 import subprocess
+import textwrap
 import sys
 from pathlib import Path
 
@@ -19,9 +20,10 @@ OUT = ROOT / "docs" / "demo.gif"
 COMMAND = "proof-layer sample_report.pdf results.json"
 
 BG, FG, DIM = (13, 17, 23), (201, 209, 217), (125, 133, 144)
+SOFT = (170, 180, 192)
 GREEN, RED, AMBER = (63, 185, 80), (248, 81, 73), (255, 190, 40)
 WORDS = (("CORRECT", GREEN), ("WRONG", RED), ("CHECK", AMBER))
-W, PAD, FONT_SIZE, LINE = 940, 24, 16, 25
+W, PAD, FONT_SIZE, LINE = 1060, 28, 19, 30
 
 
 def real_output() -> list[str]:
@@ -45,15 +47,15 @@ def blocks_of(lines: list[str]) -> list[list[str]]:
         if word_of(ln)[0]:
             blocks.append([ln])
         elif ln.startswith(" ") and blocks:
-            blocks[-1].append(ln)
+            blocks[-1].extend(textwrap.wrap(ln.strip(), 84, initial_indent=" " * 9, subsequent_indent=" " * 9))
     return blocks
 
 
 def draw_frame(font, height, command_shown, shown_blocks, summary, cursor):
     img = Image.new("RGB", (W, height), BG)
     d = ImageDraw.Draw(img)
-    d.text((PAD, PAD - 6), "proof-layer: 4 figures an AI took from a report, checked against the PDF", font=font, fill=DIM)
-    y = PAD + 30
+    d.text((PAD, PAD - 6), "An AI read a company report and gave 4 figures. proof-layer checks each one against the PDF.", font=font, fill=FG)
+    y = PAD + 36
     d.text((PAD, y), "$ " + command_shown + ("_" if cursor else ""), font=font, fill=FG)
     y += LINE + 8
     for block in shown_blocks:
@@ -63,7 +65,7 @@ def draw_frame(font, height, command_shown, shown_blocks, summary, cursor):
                 d.text((PAD, y), word, font=font, fill=rgb)
                 d.text((PAD + font.getlength(word), y), line[len(word):], font=font, fill=FG)
             else:
-                d.text((PAD, y), line, font=font, fill=DIM)
+                d.text((PAD, y), line, font=font, fill=SOFT)
             y += LINE
     if summary:
         y += 8
@@ -76,10 +78,10 @@ def main() -> None:
     lines = [ln for ln in real_output() if ln.strip()]
     blocks = blocks_of(lines)
     assert len(blocks) == 4, f"expected 4 figures, got {len(blocks)}"
-    assert "need attention" in lines[-1], "unexpected output"
+    assert "need your attention" in lines[-1], "unexpected output"
     counts = {w: sum(1 for b in blocks if b[0].startswith(w)) for w, _ in WORDS}
-    summary = f"{counts['CORRECT']} correct   {counts['WRONG']} wrong   {counts['CHECK']} to check"
-    height = PAD * 2 + 30 + LINE + 8 + LINE * sum(len(b) for b in blocks) + 8 + LINE + 6
+    summary = lines[-1].strip()
+    height = PAD * 2 + 36 + LINE + 8 + LINE * sum(len(b) for b in blocks) + 8 + LINE + 6
 
     frames, durations = [], []
     step = 6

@@ -91,12 +91,12 @@ proof-layer sample_report.pdf results.json
 ```
 CORRECT  Scope 1 emissions = 5,845, page 1
 WRONG    Scope 1 emissions = 19,691, page 1
-         the report says: p1: Scope 1 emissions (tCO2-e) 5,845 6,102
+         The report has, on page 1: Scope 1 emissions (tCO2-e) 5,845 6,102
 CORRECT  Total energy consumption = 1,074,807, page 1
 CHECK    Scope 3 emissions = 5,845
-         nothing in the document is clearly about this; the number appears elsewhere
+         The report doesn't clearly talk about this, though the number does appear elsewhere in it.
 
-2 need attention
+2 of 4 need your attention: 1 wrong, 1 to check.
 ```
 
 - **Scope 1 = 5,845:** correct, found on page 1.

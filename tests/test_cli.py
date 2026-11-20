@@ -25,7 +25,7 @@ def test_a_written_answer_is_checked_figure_by_figure():
     assert done.returncode == 1
     assert "CORRECT  Scope 1 emissions = 5,845, page 1" in out
     assert "WRONG    Scope 1 emissions = 19,691, page 1" in out
-    assert "1 need attention" in out
+    assert "1 of 4 need your attention" in out
 
 
 def test_stored_figures_are_checked_against_their_saved_text_and_the_pdf():
@@ -35,10 +35,10 @@ def test_stored_figures_are_checked_against_their_saved_text_and_the_pdf():
     out = done.stdout
     assert done.returncode == 1
     assert "CORRECT  Scope 1 emissions = 5,845, page 1" in out
-    assert "the stored number is not in the text it was taken from" in out
-    assert "the stored text is not in the PDF" in out
-    assert "the text is in the PDF on page 1, not page 3" in out
-    assert "3 need attention" in out
+    assert "The stored number is not in the text it was taken from" in out
+    assert "The stored text is not in the PDF" in out
+    assert "The text is in the PDF on page 1, not page 3" in out
+    assert "3 of 4 need your attention" in out
 
 
 def _run(tmp_path, rows, pdf="examples/sample_report.pdf", name="r.json", raw=None):
