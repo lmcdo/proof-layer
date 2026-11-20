@@ -4,25 +4,29 @@ I've used AI every day for about two years. It kept making up figures, telling m
 
 **Every number your AI pulls from a document, checked against that document.**
 
-![proof-layer checking 8 figures an AI took from a report: 3 passed, 2 stopped, 3 to confirm](docs/demo.gif)
+![proof-layer checking 4 figures an AI took from a report: 2 correct, 1 wrong, 1 to check](docs/demo.gif)
 
 An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks you instead of guessing.
 
-- **Right numbers pass on their own.** In testing, 88 in 100 right numbers needed no one.
+- **Many right numbers pass on their own.** In the whole-PDF test, 57 in 100. The rest come back as "check" with the page shown, and your AI can settle most of them (see below).
 - **Wrong numbers are stopped.** 100 in 100 in testing (889 of 889 deliberately wrong numbers).
 - **Same answer every time.** Fixed rules, no second AI, no cost per check.
 - **Works with what you already use.** Any AI, any extraction tool, any RAG setup.
 
 ## How it fits into your work
 
-You're preparing a client's climate disclosure from 40 company reports.
+proof-layer is for any job where an AI states numbers it took from a PDF and you need them right: finance, legal, health, engineering, planning, research. The example below is one case. Yours will look different.
+
+**Example:** you're preparing a client's climate disclosure from 40 company reports.
 
 1. **Your AI extracts the figures.** 500 numbers, each with what it is about ("Scope 1 emissions", "Total energy use").
-2. **proof-layer checks all 500.** Most pass straight through, already confirmed against the source.
-3. **The few it asks about come back with a one-line reason,** such as "the same wording appears in two tables". You confirm them.
+2. **proof-layer checks all 500.** Many pass straight through, already confirmed against the source.
+3. **The rest come back with a one-line reason,** such as "the same wording appears in two tables", and the page where the number was found. You (or your AI) confirm them.
 4. **You send the spreadsheet knowing every figure was checked against its source.**
 
-**Time saved.** Instead of checking all 500 by hand, you confirm only the ones it asks about. At 3 minutes a check, 500 numbers is about 25 hours by hand. At the test's rate of 43 in 100 that need confirming (24 in 100 when you give the page), it is about 11 hours (6 with the page). Use your own minutes per check. (The held-back numbers may take a little longer than average.)
+**What it needs:** a PDF with a text layer (not a scan or photo), and numbers that are written in it. It checks that a number is there and belongs to the right item; it does not judge whether the document itself is right. The checking is fixed code: same answer every time. The optional AI step only answers "which item is this number?", and cannot approve a number that isn't in the document. So far it has been tested on two real sustainability reports, not yet on other kinds of document.
+
+**Time saved.** Instead of checking all 500 by hand, you confirm only the ones it asks about. At 3 minutes a check, 500 numbers is about 25 hours by hand. At the test's rate of 43 in 100 that need confirming (24 in 100 when you give the page), it is about 11 hours (6 with the page). Letting your AI settle the label questions cut it much further in a small test (see "Let your AI settle the rest"). Use your own minutes per check. (The held-back numbers may take a little longer than average.)
 
 ## What you get back
 
