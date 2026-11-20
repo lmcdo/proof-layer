@@ -15,7 +15,7 @@
         "WRONG_FOR_LABEL": 1
       },
       "catch_rate": 1.0,
-      "wrong_n": 889,
+      "wrong_n": 888,
       "catch_rate_by_kind": {
         "digit_changed": 1.0,
         "digits_swapped": 1.0,
@@ -25,7 +25,7 @@
       },
       "wrong_claim_verdicts": {
         "AMBIGUOUS_LABEL": 31,
-        "ABSENT": 666,
+        "ABSENT": 665,
         "WRONG_FOR_LABEL": 183,
         "UNKNOWN": 9
       },
@@ -41,7 +41,7 @@
         "AMBIGUOUS_LABEL": 15
       },
       "catch_rate": 1.0,
-      "wrong_n": 889,
+      "wrong_n": 888,
       "catch_rate_by_kind": {
         "digit_changed": 1.0,
         "digits_swapped": 1.0,
@@ -51,7 +51,7 @@
       },
       "wrong_claim_verdicts": {
         "UNKNOWN": 43,
-        "ABSENT": 673,
+        "ABSENT": 672,
         "WRONG_FOR_LABEL": 172,
         "AMBIGUOUS_LABEL": 1
       },
@@ -67,7 +67,7 @@
         "WRONG_FOR_LABEL": 1
       },
       "catch_rate": 1.0,
-      "wrong_n": 889,
+      "wrong_n": 888,
       "catch_rate_by_kind": {
         "digit_changed": 1.0,
         "digits_swapped": 1.0,
@@ -77,7 +77,7 @@
       },
       "wrong_claim_verdicts": {
         "AMBIGUOUS_LABEL": 31,
-        "ABSENT": 666,
+        "ABSENT": 665,
         "WRONG_FOR_LABEL": 183,
         "UNKNOWN": 9
       },
@@ -86,7 +86,7 @@
   },
   "whole_page_without_label_for_comparison": {
     "held_back_true": 0.0,
-    "catch_rate": 0.757,
-    "wrong_n": 889
+    "catch_rate": 0.7568,
+    "wrong_n": 888
   }
 }

@@ -6,27 +6,36 @@ I've used AI every day for about two years. It kept making up figures, telling m
 
 ![proof-layer checking 4 figures an AI took from a report: 2 correct, 1 wrong, 1 to check](docs/demo.gif)
 
-An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks you instead of guessing.
+An AI reads a report and writes "Scope 1 emissions: 19,691". proof-layer confirms that number is in the document, and that it belongs to Scope 1. Right numbers pass straight through. Wrong ones are stopped. If it can't tell, it asks instead of guessing.
 
-- **Many right numbers pass on their own.** In the whole-PDF test, 57 in 100. The rest come back as "check" with the page shown, and your AI can settle most of them (see below).
-- **Wrong numbers are stopped.** 100 in 100 in testing (889 of 889 deliberately wrong numbers).
-- **Same answer every time.** Fixed rules, no second AI, no cost per check.
-- **Works with what you already use.** Any AI, any extraction tool, any RAG setup.
+## Use it in 3 steps
+
+1. **Ask your AI the way [PROMPT.md](PROMPT.md) says.** It answers with each figure plus its page and the exact quote it came from. Save the reply as `answer.json`. Works with any AI that can read your PDF.
+2. **Run `proof-layer report.pdf answer.json`.** Code checks that each quote really is on that page and the number really is in it.
+3. **Settle the rest in one go.** Add `--ask-ai items.json`: it writes the few figures code can't settle, with the text around them. Your AI answers yes, no or unsure, and `--answers answers.json` applies that. What is still left comes with a picture of the page, number highlighted (`--sheet check.html`).
+
+## What to expect (measured)
+
+- **Wrong numbers are stopped.** On 5 real documents (climate, finance and government reports) every one of 888 and 1,247 deliberately wrong numbers was stopped with plain wording, and 1,244 of 1,247 with padded wording. 
+- **With figure, page and quote, few reach you.** In small tests: 2 of 43 figures on two climate reports, and 6 of 55 on the Reserve Bank's annual report and a Deloitte government review. About 8 in 100 overall, each with a reason and a picture.
+- **Without quotes, more do.** If your AI gives only a sentence, proof-layer has to guess which item each number belongs to: 43 in 100 came back as "check" on the climate reports and 80 in 100 on the finance and government ones. That is why step 1 asks for quotes.
+- **A "yes" from your AI can't approve an invented number.** It only counts when the number is already in the saved text and that text is on the PDF page. In a test, 0 of 87 wrong claims passed.
+- **Same checks every time.** The checking is fixed code. The AI step is optional and only answers "is this number that item?".
+
+These are small tests, on five documents, with answers written by a Sonnet helper, so treat them as a guide. The AI's "yes" answers were not each checked by hand.
 
 ## How it fits into your work
 
-proof-layer is meant for any job where an AI states numbers it took from a PDF and you need them right. The example below is one case; yours will look different. How far that holds is measured, not assumed: see "Beyond climate reports" under Results.
+proof-layer is meant for any job where an AI states numbers it took from a PDF and you need them right. The example below is one case; yours will look different.
 
 **Example:** you're preparing a client's climate disclosure from 40 company reports.
 
-1. **Your AI extracts the figures.** 500 numbers, each with what it is about ("Scope 1 emissions", "Total energy use").
-2. **proof-layer checks all 500.** Many pass straight through, already confirmed against the source.
-3. **The rest come back with a one-line reason,** such as "the same wording appears in two tables", and the page where the number was found. You (or your AI) confirm them.
+1. **Your AI extracts the figures,** each with its page and quote (500 numbers).
+2. **proof-layer checks all 500.** Most pass straight through, already confirmed against the source.
+3. **The rest come back with a one-line reason,** the page, and a picture. Your AI settles most; you look at the few left.
 4. **You send the spreadsheet knowing every figure was checked against its source.**
 
-**What it needs:** a PDF with a text layer (not a scan or photo), and numbers that are written in it. It checks that a number is there and belongs to the right item; it does not judge whether the document itself is right. The checking is fixed code: same answer every time. The optional AI step only answers "which item is this number?", and cannot approve a number that isn't in the document. It has been tested on two sustainability reports and on three finance and government documents (see Results).
-
-**Time saved.** Instead of checking all 500 by hand, you confirm only the ones it asks about. At 3 minutes a check, 500 numbers is about 25 hours by hand. At the test's rate of 43 in 100 that need confirming (24 in 100 when you give the page), it is about 11 hours (6 with the page). Letting your AI settle the label questions cut it much further in a small test (see "Let your AI settle the rest"). Use your own minutes per check. (The held-back numbers may take a little longer than average.)
+**What it needs:** a PDF with a text layer (not a scan or photo), and numbers that are written in it. It checks that a number is there and belongs to the right item; it does not judge whether the document itself is right. Figures your AI works out itself (a share, a sum) are flagged for you, because they are not printed in the document. Figures written as "5.2 million" are always shown to you.
 
 ## What you get back
 
@@ -147,17 +156,17 @@ assert check_claim("Scope 3 emissions", 5845, page)["verdict"] == "UNKNOWN"
 
 ## Results
 
-Tested on two real public company sustainability reports (Alinta Energy FY25 and Geelong Port 2025), version 0.1.0. I took 189 real numbers from them, then made 889 deliberately wrong versions: a digit changed, two digits swapped, multiplied by ten, the sign flipped, or a number borrowed from elsewhere on the same page. Numbers that are part of their own description ("Scope 3", "wharf 7") were left out, because there is nothing to check there.
+Tested on two real public company sustainability reports (Alinta Energy FY25 and Geelong Port 2025), version 0.1.0. I took 189 real numbers from them, then made 888 deliberately wrong versions: a digit changed, two digits swapped, multiplied by ten, the sign flipped, or a number borrowed from elsewhere on the same page. Numbers that are part of their own description ("Scope 3", "wharf 7") were left out, because there is nothing to check there.
 
 | | Wrong numbers stopped | Right numbers it asks you to confirm |
 |---|---|---|
-| Only checking the number appears somewhere on the page | 69 in 100 | 0 |
-| **proof-layer, one page** | **100 in 100** (889 of 889) | **24 in 100** |
-| **proof-layer, whole PDF, no page number** (what the command does) | **100 in 100** (889 of 889) | **43 in 100** |
+| Only checking the number appears somewhere on the page | 76 in 100 | 0 |
+| **proof-layer, one page** | **100 in 100** (888 of 888) | **24 in 100** |
+| **proof-layer, whole PDF, no page number** (what the command does) | **100 in 100** (888 of 888) | **43 in 100** |
 
 When it asks you to confirm because the wording fits several places, it also tells you the page where it found your number, so the check is one look, not a search. The ones it asks you to confirm are not errors. They are numbers it won't guess at, mostly short ones ("2", "10") or wording that appears in several tables of one report, like "Total water". Searching the whole PDF finds more places that fit, so it asks more often. In the test the descriptions are just the words printed before each number, often fragments like "GRI" or "more than". With descriptions of 4 or more words, whole-PDF mode asked about 30 in 100 (18 of 60). Most of what remains is real ambiguity, like "Total Scope 1+2 emissions" appearing in 6 to 11 places with different numbers. The test used a random sample of all the numbers in both reports, including index tables and chart labels, so real reports with clearer descriptions should ask less. Wrong numbers that passed in this test: 0 of 889. An earlier version let a number through when it was only the digit in the item's name (item "Scope 3", number 3); that is fixed and covered by a test.
 
-**Beyond climate reports.** The same test on three documents from other fields (the Reserve Bank of Australia's annual report, a Deloitte compliance review for a government department, and a third government PDF): 1,258 wrong numbers, **1,255 stopped (99.8 in 100)**. 80 in 100 right numbers came back as "check", against 43 in 100 on the climate reports. So the safety carried over; the effort did not. These documents are laid out more densely, and the test's descriptions are just the scrap of text printed before each number, which is a harsh test. The 3 that got through shared one cause: a number on the line below a reference ("Table 2.2.3; see also Part 3.3") was taken as that row's figure. Whether your AI's own descriptions bring the 80 in 100 down is not measured here.
+**Beyond climate reports.** The same test on three documents from other fields (the Reserve Bank of Australia's annual report, a Deloitte compliance review for a government department, and a third government PDF): 1,247 wrong numbers, **1,244 stopped (99.8 in 100)** with padded wording, all 1,247 with plain wording. 80 in 100 right numbers came back as "check", against 43 in 100 on the climate reports. So the safety carried over; the effort did not. These documents are laid out more densely, and the test's descriptions are just the scrap of text printed before each number, which is a harsh test. The 3 that got through shared one cause: a number on the line below a reference ("Table 2.2.3; see also Part 3.3") was taken as that row's figure. Whether your AI's own descriptions bring the 80 in 100 down is not measured here.
 
 Run it yourself: `python -I benchmarks/whole_document_wrong_numbers.py out.json report1.pdf report2.pdf` (or `located_wrong_numbers.py` for one page at a time; needs `pip install ".[benchmarks]"`).
 

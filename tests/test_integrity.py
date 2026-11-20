@@ -91,3 +91,11 @@ class TestWriteGate:
             {"v": None, "note": "Assumed — verify against the source"},
             value_field="v", marker_fields=["note"],
         )  # no raise
+
+
+def test_accounting_brackets_are_a_negative_number_but_footnote_markers_are_not():
+    from proof_layer.integrity import explain_value, UNEXPLAINED
+    assert explain_value(-4153, "Net Profit/(Loss) (4,153) (5,952)", None)[0] != UNEXPLAINED
+    assert explain_value(-952.5, "Loss (952.5)", None)[0] != UNEXPLAINED
+    assert explain_value(-2, "See note (2) for details", None)[0] == UNEXPLAINED
+    assert explain_value(-4153, "Net Profit 4,153", None)[0] == UNEXPLAINED   # a sign flip is still stopped

@@ -1,0 +1,94 @@
+{
+  "skipped_no_label": 327,
+  "docs": [
+    "deloitte_tcf.pdf",
+    "rba.pdf",
+    "saf.pdf"
+  ],
+  "styles": {
+    "verbatim": {
+      "true_claims": 273,
+      "held_back_true": 0.7985,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 148,
+        "UNKNOWN": 40,
+        "WRONG_FOR_LABEL": 30,
+        "FOUND_IN_ROW": 55
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 1247,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "WRONG_FOR_LABEL": 495,
+        "ABSENT": 599,
+        "UNKNOWN": 102,
+        "AMBIGUOUS_LABEL": 51
+      },
+      "wrong_that_passed": 0
+    },
+    "extra": {
+      "true_claims": 273,
+      "held_back_true": 0.7949,
+      "true_verdicts": {
+        "UNKNOWN": 75,
+        "AMBIGUOUS_LABEL": 110,
+        "WRONG_FOR_LABEL": 32,
+        "FOUND_IN_ROW": 56
+      },
+      "catch_rate": 0.9976,
+      "wrong_n": 1247,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 0.9912,
+        "sign_flipped": 1.0,
+        "times_ten": 0.9963
+      },
+      "wrong_claim_verdicts": {
+        "UNKNOWN": 177,
+        "ABSENT": 601,
+        "WRONG_FOR_LABEL": 442,
+        "AMBIGUOUS_LABEL": 24,
+        "FOUND_IN_ROW": 3
+      },
+      "wrong_that_passed": 3
+    },
+    "reordered": {
+      "true_claims": 273,
+      "held_back_true": 0.7985,
+      "true_verdicts": {
+        "AMBIGUOUS_LABEL": 148,
+        "UNKNOWN": 40,
+        "WRONG_FOR_LABEL": 30,
+        "FOUND_IN_ROW": 55
+      },
+      "catch_rate": 1.0,
+      "wrong_n": 1247,
+      "catch_rate_by_kind": {
+        "digit_changed": 1.0,
+        "digits_swapped": 1.0,
+        "lifted_from_page": 1.0,
+        "sign_flipped": 1.0,
+        "times_ten": 1.0
+      },
+      "wrong_claim_verdicts": {
+        "WRONG_FOR_LABEL": 495,
+        "ABSENT": 599,
+        "UNKNOWN": 102,
+        "AMBIGUOUS_LABEL": 51
+      },
+      "wrong_that_passed": 0
+    }
+  },
+  "whole_page_without_label_for_comparison": {
+    "held_back_true": 0.0549,
+    "catch_rate": 0.7835,
+    "wrong_n": 1247
+  }
+}

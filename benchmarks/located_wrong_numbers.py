@@ -84,6 +84,8 @@ def main():
         line_nums = {float(n.rstrip(".,").replace(",", "")) for n in sw.NUM.findall(line)
                      if n.rstrip(".,").replace(",", "").replace("-", "").replace(".", "").isdigit()}
         wrongs = sw.mutate(tok, v, rng, line_nums)
+        if f"({tok})" in line:
+            wrongs.pop("sign_flipped", None)   # "(7,772)" in accounts already means -7,772: not a wrong number
         others = [x for x in page_nums[(doc, pno)] if x not in line_nums and x != v]
         if others:
             wrongs["lifted_from_page"] = rng.choice(others)

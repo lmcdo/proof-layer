@@ -736,6 +736,9 @@ def evidence_is_truncated(source_text) -> bool:
     return len(str(source_text or "")) == TRUNCATION_LIMIT
 
 
+_ACCOUNTING_NEGATIVE = re.compile(r"\((\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+|\d{3,})\)")
+
+
 def explain_value(value, source_text, unit=None) -> tuple[str, Optional[str]]:
     """Name the rule that derives ``value`` from ``source_text``, with evidence.
 
@@ -762,6 +765,15 @@ def explain_value(value, source_text, unit=None) -> tuple[str, Optional[str]]:
         evidence = rule(number, source, unit)
         if evidence:
             return name, evidence
+    if number < 0:
+        # Accounts write a loss as (4,153). Only brackets round a real quantity count: three or more
+        # digits, a thousands comma or a decimal, so a footnote marker like "(2)" is not read as -2.
+        negated = _ACCOUNTING_NEGATIVE.sub(lambda m: "-" + m.group(1), source)
+        if negated != source:
+            for name, rule in DERIVATION_RULES:
+                evidence = rule(number, negated, unit)
+                if evidence:
+                    return name, evidence
     return UNEXPLAINED, None
 
 
