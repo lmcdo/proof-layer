@@ -138,3 +138,8 @@ def test_ai_answers_settle_only_what_was_asked(tmp_path):
     # an AI "yes" can not rescue a number that is not in the text it was taken from, or a quote not in the PDF
     assert "WRONG" in run("yes", {**QROW, "value": 7777}).stdout
     assert "WRONG" in run("yes", {**QROW, "source_text": "Emissions from burning fuel 5,845 tonnes"}).stdout
+
+
+def test_sheet_looks_for_a_loss_by_its_digits():
+    from proof_layer.sheet import _forms
+    assert "4,153" in _forms(-4153) and "952.5" in _forms(-952.5)

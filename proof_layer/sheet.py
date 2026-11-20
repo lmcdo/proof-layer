@@ -15,9 +15,10 @@ def _forms(value) -> list[str]:
     except (TypeError, ValueError):
         return []
     forms = []
+    f = abs(f)          # a loss is printed as (4,153) or with a dash, so look for the digits alone
     if f.is_integer():
         forms += [f"{int(f):,}", str(int(f))]
-    forms += [f"{f:g}", str(value)]
+    forms += [f"{f:g}", str(abs(float(value))).rstrip('0').rstrip('.')]
     return list(dict.fromkeys(forms))
 
 
